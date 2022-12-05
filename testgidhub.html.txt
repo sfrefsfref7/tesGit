@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-      <title>Test for GITHUB MINI COURSE</title>
+    <title>Test for GITHUB MINI COURSE</title>
  </head>
  <body>
-     <h2>Welcome to myWebsite</h1>
+    <img src="2.png"
+    <h2>Welcome to myWebsite</h2>
 <body>
