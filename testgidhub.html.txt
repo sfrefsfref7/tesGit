@@ -6,4 +6,5 @@
  <body>
     <img src="2.png"
     <h2>Welcome to myWebsite</h2>
+    <b>UI design</b>
 <body>
