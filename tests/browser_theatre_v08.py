@@ -1,14 +1,14 @@
 """Functional UI E2E with the real FastAPI app mounted in-memory, no open PC ports.
 Browser network routing is only a transport shim; gameplay uses real app endpoints.
 """
-import json, mimetypes, os
+import json, mimetypes, os, sys
 from pathlib import Path
 from urllib.parse import urlparse
 from fastapi.testclient import TestClient
 from playwright.sync_api import sync_playwright, expect
-import app as game_server
-
 ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT))
+import app as game_server
 PROOF=ROOT/'evidence-v08'
 PROOF.mkdir(exist_ok=True)
 URL=os.environ.get('NMD_BASE','https://nightmarket-test.invalid').rstrip('/')
