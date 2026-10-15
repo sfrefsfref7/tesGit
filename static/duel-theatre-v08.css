@@ -1,0 +1,16 @@
+/* Preserve existing online authoritative duel; improve home and battle stage presentation. */
+body {background:#0a101b;}
+.hero-banner {border:3px solid #c49b63;border-radius:3px;box-shadow:0 0 0 3px #17202b,inset 0 0 0 6px #121e2b,0 22px 48px #000a;}
+.hero-banner:after {content:'✧ THE EXCHANGE OF FORTUNES ✧';position:absolute;bottom:16px;right:26px;color:#f8dd9fbb;font:700 11px Georgia,serif;letter-spacing:2px;text-shadow:0 2px 9px #000;pointer-events:none;}
+.title-nav {display:inline-flex;align-items:center;padding:8px 13px;border:1px solid #d3a96d;color:#f8d8a3;background:linear-gradient(#27374a,#142136);font:800 11px system-ui;text-decoration:none;letter-spacing:.5px;}
+.title-nav:hover {filter:brightness(1.2);}
+.home-grid {gap:14px;}
+.home-grid .surface,.market.surface {border:2px solid #bc965d;box-shadow:inset 0 0 0 3px #192536,0 16px 36px #0008;border-radius:3px;}
+.hero-picks {gap:8px;}
+.hero-pick {border-radius:2px!important;border-width:2px!important;}
+.hero-pick.selected {box-shadow:0 0 15px #ddb76e99!important;}
+.arena.surface {border:3px ridge #bd9662;border-radius:3px;background-image:linear-gradient(180deg,#0a1524a8,#0b1722e3),url('/static/art/moonlit-exchange.webp');background-size:cover;background-position:center 42%;}
+.market-col .market {background:linear-gradient(130deg,#253445f9,#101b2bf4);}
+.shop-card,.board-slot {transition:transform .13s,filter .13s;}
+.shop-card:hover,.board-slot:hover {transform:translateY(-2px);filter:brightness(1.12);}
+@media(max-width:700px){.title-nav {padding:6px;font-size:9px;}.hero-banner:after{font-size:7px;right:12px}.arena.surface {min-height:330px}}

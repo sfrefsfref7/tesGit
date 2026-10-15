@@ -208,7 +208,7 @@ function render(){
   $('journeyIncome').textContent=`◈ ${r.income||5}/day`;$('journeyPrestige').textContent=`♛ ${r.prestige}`;$('journeyWins').textContent=`${r.wins} / 10`;
   $('myPortrait').src=art(r.hero);$('myName').textContent=r.name;$('myClass').textContent=r.heroCatalog[r.hero]?.title||r.hero;
   $('heroHealth').textContent=`MAX HEALTH · ${r.maxHealth}`;$('healthTrack').style.width=`${Math.max(0,Math.min(100,r.prestige/20*100))}%`;
-  renderBoard();renderSkills();renderEncounter();window.dispatchEvent(new CustomEvent('nightmarket:render',{detail:{catalog:r.catalog,skills:r.skillCatalog}}));
+  renderBoard();renderSkills();renderEncounter();window.dispatchEvent(new CustomEvent('nightmarket:render',{detail:{catalog:r.catalog,skills:r.skillCatalog,phase:r.phase,hero:r.hero,day:r.day,hour:r.hour,wins:r.wins,prestige:r.prestige,level:r.level,gold:r.gold}}));
   empty($('chronicle'));for(const row of r.history){const p=document.createElement('p');p.textContent=row;$('chronicle').append(p);}
   document.querySelectorAll('[data-action]').forEach(b=>b.disabled=b.disabled||state.pending);
 }

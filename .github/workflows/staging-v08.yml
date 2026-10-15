@@ -1,0 +1,51 @@
+name: Night Market Duel v0.8 Visual and Interaction Acceptance
+on:
+  push:
+    branches: [night-market-duel-v08-staging]
+  workflow_dispatch:
+jobs:
+  visual-and-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt pytest httpx playwright
+      - name: Server-authoritative regression suite
+        run: python -m pytest -q
+      - name: Validate client scripts
+        run: |
+          for file in static/app.js static/expedition.js static/expedition-glyphs.js static/expedition-premium.js static/game-vfx.js static/expedition-codex.js static/bazaar-theatre-v08.js; do node --check "$file"; done
+      - name: Browser dependencies
+        run: python -m playwright install --with-deps chromium
+      - name: Real browser UI, two viewports, isolated staging server
+        run: |
+          mkdir -p evidence-v08
+          python -m uvicorn app:app --host 127.0.0.1 --port 3989 > evidence-v08/server.log 2>&1 &
+          python - <<'PY'
+          import urllib.request,time,json
+          for attempt in range(40):
+            try:
+              data=json.load(urllib.request.urlopen('http://127.0.0.1:3989/health',timeout=3))
+              if data.get('ok'):break
+            except Exception:pass
+            time.sleep(1)
+          else:raise SystemExit('staging server failed health probe')
+          PY
+          NMD_BASE=http://127.0.0.1:3989 python tests/browser_theatre_v08.py
+          NMD_BASE=http://127.0.0.1:3989 python tests/browser_guided_v07.py
+      - name: Publish screenshots and reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: night-market-v08-ui-browser-evidence
+          path: |
+            evidence-v08/*.png
+            evidence-v08/*.json
+            evidence-v08/server.log
+            evidence/v07-*.png
+            evidence/v07-browser-report.json
+          if-no-files-found: warn
