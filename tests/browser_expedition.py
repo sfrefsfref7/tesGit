@@ -57,11 +57,11 @@ def run():
             if page.get_by_role('button',name='CONTINUE JOURNEY').count():
                 previous=page.locator('#journeyDay').inner_text()
                 page.get_by_role('button',name='CONTINUE JOURNEY').first.click()
-                page.wait_for_function('prev=>document.querySelector("#journeyDay").textContent!==prev',previous,timeout=12000)
+                page.wait_for_function('prev=>document.querySelector("#journeyDay").textContent!==prev',arg=previous,timeout=12000)
             elif page.get_by_role('button',name='SKIP ENCOUNTER').count():
                 previous=page.locator('#journeyDay').inner_text()
                 page.get_by_role('button',name='SKIP ENCOUNTER').click()
-                page.wait_for_function('prev=>document.querySelector("#journeyDay").textContent!==prev',previous,timeout=12000)
+                page.wait_for_function('prev=>document.querySelector("#journeyDay").textContent!==prev',arg=previous,timeout=12000)
             elif page.get_by_role('button',name='ENGAGE IN COMBAT').count():
                 page.get_by_role('button',name='ENGAGE IN COMBAT').click()
                 page.locator('#battleModal').wait_for(state='visible',timeout=12000);page.locator('#battleSkip').click()
