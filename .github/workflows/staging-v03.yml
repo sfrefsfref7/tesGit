@@ -1,0 +1,44 @@
+name: Night Market Duel v0.3 staging browser acceptance
+on:
+  push:
+    branches: [night-market-duel-v03-staging]
+  workflow_dispatch:
+jobs:
+  test-staging:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install -r requirements.txt pytest httpx playwright
+      - name: Run game, web, security and fuzz tests
+        run: python -m pytest -q
+      - name: Browser dependencies
+        run: python -m playwright install --with-deps chromium
+      - name: Launch staging server, verify browser game with two players
+        run: |
+          mkdir -p evidence
+          nohup python -m uvicorn app:app --host 127.0.0.1 --port 3955 > evidence/staging-server.log 2>&1 &
+          python - <<'PY'
+          import time,urllib.request
+          for i in range(30):
+              try:
+                  print(urllib.request.urlopen('http://127.0.0.1:3955/health',timeout=3).read())
+                  break
+              except Exception:time.sleep(1)
+          else: raise SystemExit('Staging server did not start')
+          PY
+          NMD_PUBLIC_BASE=http://127.0.0.1:3955 python tests/browser_depth.py
+          NMD_PUBLIC_BASE=http://127.0.0.1:3955 python tests/browser_public.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: night-market-v03-staging-evidence
+          path: |
+            evidence/browser-depth.json
+            evidence/browser-public.json
+            evidence/v03-*.png
+            evidence/*-mobile-*.png
+            evidence/staging-server.log

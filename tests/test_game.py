@@ -1,5 +1,5 @@
 import pytest
-from game import Player, Room, GameError, HEROES, ITEMS, MAX_SLOTS, valid_name
+from game import Player, Room, GameError, HEROES, ITEMS, SHOP_SIZE, BOONS, MAX_SLOTS, valid_name
 
 def room(bot=True):
     return Room('ABCDE',Player('Dome','tok-a','nyra'),bot=bot,seed=42)
@@ -32,7 +32,7 @@ def test_buy_and_duplicate_prices():
     r.act(p,'buy',{'index':0})
     assert p.gold==initial-price
     assert key in p.board
-    assert len(p.shop)==3
+    assert len(p.shop)==SHOP_SIZE-1
 
 def test_shop_move_sell_guardrails():
     r=room()

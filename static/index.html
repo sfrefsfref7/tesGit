@@ -7,7 +7,7 @@
   <meta name="description" content="Night Market Duel — an original online strategy battler for two friends."/>
   <title>Night Market Duel · The Arcane Bazaar</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml"/>
-  <link rel="stylesheet" href="/static/style.css"/>
+  <link rel="stylesheet" href="/static/style.css?v=0.3.0"/>
 </head>
 <body>
   <div class="mist mist-a"></div><div class="mist mist-b"></div>
@@ -18,7 +18,7 @@
     </header>
     <main>
       <section class="home-screen" id="homeScreen">
-        <div class="hero-banner"><div class="banner-overlay"></div><div class="banner-ornament">✦ <span>ENTER THE AFTER-HOURS</span> ✦</div><div class="banner-inner"><div class="eyebrow">A STRATEGY DUEL FOR TWO</div><h1>EVERY DEAL<br/><em>HAS A PRICE.</em></h1><p>Build a vicious collection of enchanted relics. Outsmart your rival. Rule the night market.</p><div class="banner-metrics"><span>⚔ REAL-TIME DUELS</span><span>✧ 4 UNIQUE HEROES</span><span>◈ FREE TO PLAY</span></div></div></div>
+        <div class="hero-banner"><div class="banner-overlay"></div><div class="banner-ornament">✦ <span>ENTER THE AFTER-HOURS</span> ✦</div><div class="banner-inner"><div class="eyebrow">A STRATEGY DUEL FOR TWO</div><h1>EVERY DEAL<br/><em>HAS A PRICE.</em></h1><p>Build a vicious collection of enchanted relics. Outsmart your rival. Rule the night market.</p><div class="banner-metrics"><span>⚔ LIVE 1V1 DUELS</span><span>✧ 40 UNIQUE ITEMS</span><span>◈ FREE TO PLAY</span></div></div></div>
         <div class="home-grid">
           <div class="surface panel-join">
             <div class="panel-heading"><div class="eyebrow">01 / SET YOUR LEGEND</div><h2>Choose your champion</h2><p>Every hero changes how you build your board.</p></div>
@@ -29,7 +29,7 @@
             <div id="botControls" hidden><p class="bot-hint">Learn the market, find outrageous combos, and duel The Curator. No second player needed.</p><button id="botBtn" class="gold-btn large"><span>CHALLENGE THE CURATOR</span><span>↗</span></button></div>
             <div class="form-error" role="alert" id="formError"></div>
           </div>
-          <aside class="surface side-info"><div class="eyebrow">INSIDE THE MARKET</div><h2>Fortune favors<br/><em>the fearless.</em></h2><div class="feature"><div class="feature-symbol">◇</div><div><strong>Curate your arsenal</strong><p>Shop 16 enchanted items with unique abilities and synergies.</p></div></div><div class="feature"><div class="feature-symbol">♜</div><div><strong>Make every slot count</strong><p>Build your six-slot board. Positioning can turn defeat into victory.</p></div></div><div class="feature"><div class="feature-symbol">✦</div><div><strong>Clash in real time</strong><p>Both players witness the same server-controlled combat.</p></div></div><div class="side-footer">NO DOWNLOADS <span>✦</span> NO ACCOUNT REQUIRED</div></aside>
+          <aside class="surface side-info"><div class="eyebrow">INSIDE THE MARKET</div><h2>Fortune favors<br/><em>the fearless.</em></h2><div class="feature"><div class="feature-symbol">◇</div><div><strong>Curate your arsenal</strong><p>Explore 40 enchanted wares, forge upgrades and discover fresh combos.</p></div></div><div class="feature"><div class="feature-symbol">♜</div><div><strong>Make every slot count</strong><p>Build your six-slot board. Positioning can turn defeat into victory.</p></div></div><div class="feature"><div class="feature-symbol">✦</div><div><strong>Clash in real time</strong><p>Both players witness the same server-controlled combat.</p></div></div><div class="side-footer">NO DOWNLOADS <span>✦</span> NO ACCOUNT REQUIRED</div></aside>
         </div>
       </section>
       <section class="game-screen" id="gameScreen" hidden>
@@ -53,18 +53,19 @@
             <div class="market surface">
               <div class="market-header"><div><div class="eyebrow">02 / THE GRAND MARKET</div><h2 id="marketTitle">Prepare for battle</h2></div><div class="wallet"><span>YOUR PURSE</span><strong>◈ <span id="goldValue">14</span></strong></div></div>
               <div class="opponent-line"><span>RIVAL STATUS</span><strong id="opponentStatus">Waiting for opponent...</strong></div>
+              <div class="boon-area" id="boonArea"><div class="section-head"><h3>Choose a market pact <span>· one per round</span></h3><span class="pact-step" id="boonStep">ROUND 1</span></div><div class="boon-grid" id="boonGrid"></div><div class="my-boons" id="myBoons" aria-label="Your chosen market pacts"></div></div>
               <div class="shop-area" id="shopArea"><div class="section-head"><h3>Tonight's wares</h3><button class="tiny-btn" id="rerollBtn">↻ REROLL <b>2 ◈</b></button></div><div class="shop-grid" id="shopGrid"></div><div class="help-text">Tap an item to inspect it. Buy it for your board.</div></div>
-              <div class="board-area"><div class="section-head"><h3>Your arsenal <span>· 6 slots</span></h3><span class="slots-text" id="boardCount">0 / 6 EQUIPPED</span></div><div class="board-grid" id="boardGrid"></div><div class="help-text" id="boardHelp">Tap one equipped item, then another slot to swap.</div></div>
+              <div class="board-area"><div class="section-head"><h3>Your arsenal <span>· 6 slots · forge up to +2</span></h3><span class="slots-text" id="boardCount">0 / 6 EQUIPPED</span></div><div class="board-grid" id="boardGrid"></div><div class="help-text" id="boardHelp">Tap an item twice to inspect, forge or sell it. Tap a different slot to swap.</div></div>
               <div class="market-footer"><div class="phase-note" id="phaseNote"><span class="phase-note-icon">✦</span><span>Equip your arsenal, then signal that you're ready.</span></div><button id="readyBtn" class="gold-btn large">READY FOR DUEL <span>⚔</span></button><button id="rematchBtn" class="gold-btn large" hidden>REQUEST REMATCH <span>↗</span></button></div>
             </div>
           </div>
         </div>
       </section>
     </main>
-    <footer><span>NIGHT MARKET DUEL • ORIGINAL GAME PROTOTYPE</span><span>BUILD 0.2.0 <i>✦</i> MADE FOR TWO</span></footer>
+    <footer><span>NIGHT MARKET DUEL • ORIGINAL ONLINE STRATEGY GAME</span><span>BUILD 0.3.0 <i>✦</i> MADE FOR TWO</span></footer>
   </div>
   <div id="toast" class="toast" role="status"></div>
-  <div id="itemModal" class="modal" hidden><div class="modal-shade" data-close="true"></div><div class="modal-card" role="dialog" aria-modal="true" aria-label="Item details"><button class="modal-close" id="closeModal" aria-label="Close item details">×</button><div class="modal-item-art" id="modalArt"></div><div class="eyebrow" id="modalRarity">MAGICAL RELIC</div><h2 id="modalTitle">Item</h2><p id="modalDesc"></p><div class="modal-stats" id="modalStats"></div><button id="modalAction" class="gold-btn large">BUY ITEM</button></div></div>
-  <script src="/static/app.js" defer></script>
+  <div id="itemModal" class="modal" hidden><div class="modal-shade" data-close="true"></div><div class="modal-card" role="dialog" aria-modal="true" aria-label="Item details"><button class="modal-close" id="closeModal" aria-label="Close item details">×</button><div class="modal-item-art" id="modalArt"></div><div class="eyebrow" id="modalRarity">MAGICAL RELIC</div><h2 id="modalTitle">Item</h2><p id="modalDesc"></p><div class="modal-stats" id="modalStats"></div><button id="modalAction" class="gold-btn large">BUY ITEM</button><button id="modalForge" class="forge-btn" hidden>✦ FORGE +1</button></div></div>
+  <script src="/static/app.js?v=0.3.0" defer></script>
 </body>
 </html>
