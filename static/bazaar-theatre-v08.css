@@ -40,7 +40,7 @@ body:before {background:linear-gradient(90deg, #080d17bd 0%,#10182c4d 40%,#0a101
 .journey-hero .hero-details .eyebrow {font-size:9px;}
 .journey-hero .hero-details p {margin-bottom:7px;}
 .journey-hero .health-track {height:13px;}
-#encounterPanel {grid-area:encounter;position:relative;min-height:420px;padding:17px 22px 24px;overflow:hidden;isolation:isolate;background:linear-gradient(90deg,#0c1729f7 0%,#0f1b2ae9 43%,#121b28d0 100%);border:2px solid #c49c63;box-shadow:inset 0 0 0 3px #28313b,0 14px 32px #0009;}
+#encounterPanel {grid-area:encounter;position:relative;top:auto;min-height:420px;padding:17px 22px 24px;overflow:hidden;isolation:isolate;background:linear-gradient(90deg,#0c1729f7 0%,#0f1b2ae9 43%,#121b28d0 100%);border:2px solid #c49c63;box-shadow:inset 0 0 0 3px #28313b,0 14px 32px #0009;}
 #encounterPanel .encounter-scene-art {pointer-events:none;position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#0f1a29ef 0%,#182332a1 55%,#0c192ca5 100%),linear-gradient(0deg,#101421 0%,transparent 40%),url('/static/art/moonlit-exchange.webp') 64% 38%/cover;opacity:.82;}
 .scene-lantern {position:absolute;top:30px;right:35px;font-size:68px;color:#f7c57a88;text-shadow:0 0 42px #e8b061cf;}
 .scene-mark {position:absolute;bottom:9px;right:17px;font:800 10px Georgia,serif;letter-spacing:2px;color:#fff0c870;}
@@ -189,3 +189,7 @@ body:before {background:linear-gradient(90deg, #080d17bd 0%,#10182c4d 40%,#0a101
   .theatre-menu {top:61px;}
 }
 @media(prefers-reduced-motion:reduce){#encounterContent .offer,.run-tabs button{transition:none!important;}}
+
+/* Override inherited sticky encounter offset: grid rows must never overlap. */
+#encounterPanel {top:auto!important;align-self:stretch;}
+#boardPanel .stash-empty{grid-column:1 / -1;}

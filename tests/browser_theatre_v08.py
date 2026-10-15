@@ -54,6 +54,7 @@ def run():
             page.on('requestfailed',lambda r:report['failed_requests'].append(str(r.url)))
             page.goto(URL+'/expedition',wait_until='networkidle')
             expect(page.locator('#opening')).to_be_visible()
+            page.evaluate('window.scrollTo(0,0)');page.wait_for_timeout(180)
             page.screenshot(path=str(PROOF/f'{kind}-hero-select.png'),full_page=True)
             page.locator('#gameMenuToggle').click()
             expect(page.locator('#gameMenuPanel')).to_be_visible()
@@ -64,9 +65,11 @@ def run():
             expect(page.locator('#encounterTitle')).to_contain_text('opening advantage')
             assert page.locator('#victoryMarkers i').count()==10
             assert page.locator('.run-tabs button').count()==5
+            page.evaluate('window.scrollTo(0,0)');page.wait_for_timeout(180)
             page.screenshot(path=str(PROOF/f'{kind}-starter.png'),full_page=True)
             page.locator('#encounterContent .offer').first.click()
             expect(page.locator('#encounterTitle')).to_have_text('Choose your path')
+            page.evaluate('window.scrollTo(0,0)');page.wait_for_timeout(180)
             page.screenshot(path=str(PROOF/f'{kind}-route.png'),full_page=True)
             page.locator('.run-tabs [data-scene="boardPanel"]').click()
             expect(page.locator('.run-tabs [data-scene="boardPanel"]')).to_have_class('active')
@@ -77,6 +80,7 @@ def run():
             expect(page.locator('.run-tabs [data-scene="collectionPanel"]')).to_have_class('active')
             page.locator('#codexSearch').fill('blade')
             expect(page.locator('#codexCount')).to_contain_text('matching entries')
+            page.evaluate('window.scrollTo(0,0)');page.wait_for_timeout(180)
             page.screenshot(path=str(PROOF/f'{kind}-codex.png'),full_page=True)
             page.reload(wait_until='networkidle')
             expect(page.locator('#game')).to_be_visible(timeout=10000)
