@@ -26,7 +26,7 @@ jobs:
               try:
                   with urllib.request.urlopen(url,timeout=12) as r:
                       v=json.load(r)
-                  if v.get('ok') and v.get('build')=='0.5.0':
+                  if v.get('ok') and v.get('build')=='0.7.0':
                       print('Public HTTPS healthy:',v)
                       break
               except Exception as ex: print('probe',i,type(ex).__name__,str(ex)[:100])
@@ -51,6 +51,10 @@ jobs:
         run: python tests/browser_expedition.py
         env:
           NMD_BASE: https://night-market-duel-dome.onrender.com
+      - name: Verify new guided Expedition through public HTTPS
+        run: python tests/browser_guided_v07.py
+        env:
+          NMD_BASE: https://night-market-duel-dome.onrender.com
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -63,4 +67,6 @@ jobs:
             evidence/*-mobile-*.png
             evidence/v05-*.png
             evidence/v05-browser-expedition.json
+            evidence/v07-*.png
+            evidence/v07-browser-report.json
           if-no-files-found: ignore
