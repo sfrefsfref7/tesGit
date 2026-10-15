@@ -1,3 +1,5 @@
+**Night Market Duel v0.5.0** — เล่น 1v1 กับเพื่อนที่ `https://night-market-duel-dome.onrender.com/` และ Expedition แบบเดี่ยวที่ `/expedition` อ่าน [README_V05_TH.md](README_V05_TH.md) สำหรับระบบใหม่และข้อจำกัด
+
 **เวอร์ชัน 0.3.0** — เพิ่มไอเทม 40 ชนิด, 14 Market Pacts, Forge +1/+2 และการจัดร้านค้า 5 ชิ้น อ่านบันทึกได้ที่ [CHANGELOG_TH.md](CHANGELOG_TH.md)
 
 # NIGHT MARKET DUEL — วิธีเล่นและเปิดออนไลน์ (ฟรี)

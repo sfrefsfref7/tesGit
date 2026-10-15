@@ -13,3 +13,5 @@ Run source SHA256:
 - `tests/test_expedition_v05.py`: `65b6aac67d60298e57411a124ce730a70596fef4615fddb688e3f27ba313cbb9`
 - `tests/browser_expedition.py`: `1931fe619309f8362ab5ceb51ef9b351fe267b01951548a6bd9126a10eb7c5fb`
 - `.github/workflows/staging-v05.yml`: `8785876df52994fce9f654cd854251c66c219f9c731229759318468c0c3df906`
+
+Updated test runner source tracked in staging commit; see GitHub commit hash for complete provenance.
