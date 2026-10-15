@@ -4,7 +4,7 @@
 'use strict';
 const $ = (id) => document.getElementById(id);
 const state = { run: null, token: null, selected: null, hero: 'nyra', pending: false, animation: null, modal: false };
-const tokenKey = 'nightMarket:expedition:v05';
+const tokenKey = 'nightMarket:expedition:v05'; // session format deliberately unchanged for existing runs
 const art = (key) => `/static/art/${['vex','nyra','bronn','cael'].includes(key) ? key : 'vex'}.svg`;
 const icons = { dagger:'⚔', bow:'➶', gear:'⚙', flame:'✹', heart:'✚', lotus:'❀', vial:'⚗', shield:'◆', fang:'♜', clock:'◷', spark:'ϟ', mirror:'◇', rune:'✧' };
 const tierLabels = ['BRONZE', 'SILVER', 'GOLD', 'DIAMOND'];
@@ -69,12 +69,19 @@ async function resume(){
 }
 function itemData(uid){const r=state.run;return r.inventory[uid]&&r.catalog[r.inventory[uid].key];}
 function itemGlyph(item){return icons[item?.glyph]||'✧';}
+function itemVisual(glyph){
+  const slot = document.createElement('span'); slot.className = 'vector-art';
+  // The icon library contains only fixed, authored SVG paths. Never interpolate network content.
+  if (typeof iconArt === 'function' && Object.hasOwn(icons,glyph)) slot.innerHTML=iconArt(glyph);
+  else slot.textContent=icons[glyph]||'✧';
+  return slot;
+}
 function descriptor(uid){const obj=state.run.inventory[uid],data=itemData(uid);return data?`${data.name} · ${tierLabels[obj.tier]||'LEGENDARY'} · ${data.size} slot${data.size>1?'s':''}`:'Unknown artifact';}
 function setModal(open){state.modal=open;$('itemModal').hidden=!open;document.body.classList.toggle('modal-open',open);}
 function inspect(uid){
   if(!itemData(uid))return; const r=state.run,obj=r.inventory[uid],item=itemData(uid);
   $('modalTag').textContent=`${(item.tag||'Artifact').toUpperCase()} · ${tierLabels[obj.tier]||'DIAMOND'} · ${item.size} SLOT${item.size===1?'':'S'}`;
-  $('modalGlyph').textContent=itemGlyph(item);
+  $('modalGlyph').replaceChildren(itemVisual(item.glyph));
   $('modalName').textContent=item.name;
   $('modalDescription').textContent=item.text || `${item.type} item with ${item.cooldown}s cooldown`;
   const stats=empty($('modalProperties'));
@@ -105,10 +112,13 @@ function renderBoard(){
       const el=button('',()=>inspect(uid),`board-item ${item.rarity||'common'} ${state.selected===uid?'selected':''}`);
       el.style.gridColumn=`span ${size}`;el.dataset.uid=uid;
       el.setAttribute('aria-label',descriptor(uid));
-      const sign=document.createElement('span');sign.className='big-glyph';sign.textContent=itemGlyph(item);
+      const sign=document.createElement('span');sign.className='big-glyph';sign.append(itemVisual(item.glyph));
       const nm=document.createElement('span');nm.className='item-name';nm.textContent=item.name;
       const tier=document.createElement('small');tier.textContent=tierLabels[obj.tier]||'DIAMOND';
-      el.append(sign,nm,tier);holder.append(el);i+=size;
+      const time=document.createElement('span');time.className='cooldown-stamp';time.textContent=`◷ ${Number(item.cooldown).toFixed(1)}s`;
+      const tag=document.createElement('span');tag.className='card-tag';tag.textContent=item.type;
+      el.dataset.size=String(size);el.dataset.tier=String(obj.tier);el.dataset.glyph=item.glyph;
+      el.append(sign,nm,tier,time,tag);holder.append(el);i+=size;
     }else{
       const enabled=i<r.boardLimit;
       const el=button(enabled?'+':'🔒',()=>{
@@ -123,7 +133,10 @@ function renderBoard(){
   const stash=empty($('stash'));
   for(const uid of r.stash){const item=itemData(uid);if(!item)continue;
     const el=button('',()=>inspect(uid),`stash-item ${item.rarity||'common'}`);el.setAttribute('aria-label',descriptor(uid));
-    el.innerHTML=`<span class="glyph">${escapeHTML(itemGlyph(item))}</span><span class="name">${escapeHTML(item.name)}</span><small>${escapeHTML(tierLabels[r.inventory[uid].tier]||'DIAMOND')}</small>`;
+    const sym=document.createElement('span');sym.className='glyph';sym.append(itemVisual(item.glyph));
+    const nm=document.createElement('span');nm.className='name';nm.textContent=item.name;
+    const tier=document.createElement('small');tier.textContent=tierLabels[r.inventory[uid].tier]||'DIAMOND';
+    el.dataset.tier=String(r.inventory[uid].tier);el.append(sym,nm,tier);
     stash.append(el);
   }
   if(!r.stash.length){const p=document.createElement('div');p.className='stash-empty';p.textContent='Your stash is empty · visit a merchant';stash.append(p);}
@@ -135,11 +148,15 @@ function renderSkills(){const r=state.run;const el=empty($('skills'));$('skillCo
 }
 function offerCard(title,description,icon,metadata,onClick,rarity='',disabled=false){
   const el=button('',onClick,`offer ${rarity}`);el.dataset.action='true';el.disabled=state.pending||disabled;
-  const symbol=document.createElement('i');symbol.textContent=icon;
+  const symbol=document.createElement('i');
+  const key=Object.keys(icons).find(k=>icons[k]===icon);
+  if(key)symbol.append(itemVisual(key));else symbol.textContent=icon;
   const heading=document.createElement('b');heading.textContent=title;
   const text=document.createElement('small');text.textContent=description;
   const price=document.createElement('span');price.className='price';price.textContent=metadata;
-  el.append(symbol,heading,text,price);return el;
+  el.append(symbol,heading,text,price);
+  const top=document.createElement('span');top.className='offer-topline';top.textContent=(rarity||'ENCOUNTER').toUpperCase();
+  el.prepend(top);return el;
 }
 function actionButton(label,fn,primary=false){const el=button(label,fn,primary?'primary':'ghost');el.dataset.action='true';el.disabled=state.pending;return el;}
 function renderEncounter(){

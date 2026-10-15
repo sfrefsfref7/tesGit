@@ -8,12 +8,12 @@ from expedition import Run, CATALOG, SKILLS, MONSTERS, EVENTS, GameError, simula
 
 def test_expedition_web_asset_and_entry_link():
     with TestClient(app) as c:
-        assert c.get('/health').json()['build']=='0.5.0'
+        assert c.get('/health').json()['build']=='0.6.0'
         home=c.get('/').text
         assert 'href="/expedition"' in home
         page=c.get('/expedition')
         assert page.status_code==200
-        assert '/static/expedition.js?v=0.5.0' in page.text
+        assert '/static/expedition.js?v=0.6.0' in page.text
         js=c.get('/static/expedition.js')
         assert js.status_code==200 and 'action(' in js.text and 'showBattle' in js.text
         assert c.get('/expedition.py').status_code==404

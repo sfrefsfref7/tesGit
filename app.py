@@ -96,7 +96,7 @@ async def index():
 
 @app.get('/health')
 async def health():
-    return JSONResponse({'ok':True,'rooms':len(rooms),'build':'0.5.0','mode':'hosted' if os.environ.get('RENDER') else 'local'},headers={'Cache-Control':'no-store'})
+    return JSONResponse({'ok':True,'rooms':len(rooms),'build':'0.6.0','mode':'hosted' if os.environ.get('RENDER') else 'local'},headers={'Cache-Control':'no-store'})
 
 @app.websocket('/ws')
 async def websocket_endpoint(ws:WebSocket):

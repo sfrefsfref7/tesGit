@@ -1,0 +1,53 @@
+name: Night Market Duel v0.6 Original Art and UI Acceptance
+on:
+  push:
+    branches: [night-market-duel-v06-staging]
+  workflow_dispatch:
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Dependencies
+        run: python -m pip install -r requirements.txt pytest httpx playwright
+      - name: All rules and API regressions
+        run: python -m pytest -q
+      - name: Check all JavaScript
+        run: |
+          node --check static/app.js
+          node --check static/expedition.js
+          node --check static/expedition-glyphs.js
+          node --check static/expedition-premium.js
+      - name: Install headless Chromium
+        run: python -m playwright install --with-deps chromium
+      - name: Offline staging E2E and screenshots - NOT production
+        run: |
+          mkdir -p evidence
+          python -m uvicorn app:app --host 127.0.0.1 --port 3957 > evidence/v06-staging-server.log 2>&1 &
+          python - <<'PY'
+          import time,urllib.request,json
+          for i in range(30):
+              try:
+                  d=json.load(urllib.request.urlopen('http://127.0.0.1:3957/health',timeout=4))
+                  if d.get('build')=='0.6.0':break
+              except Exception:pass
+              time.sleep(1)
+          else:raise SystemExit('v0.6.0 server did not start')
+          PY
+          NMD_BASE=http://127.0.0.1:3957 python tests/browser_visual_v06.py
+          NMD_BASE=http://127.0.0.1:3957 python tests/browser_expedition.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v06-premium-ui-evidence
+          if-no-files-found: warn
+          path: |
+            evidence/v06-*.png
+            evidence/v06-visual-report.json
+            evidence/v05-*.png
+            evidence/v05-browser-expedition.json
+            evidence/v06-staging-server.log
