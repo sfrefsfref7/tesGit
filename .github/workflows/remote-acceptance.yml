@@ -26,7 +26,7 @@ jobs:
               try:
                   with urllib.request.urlopen(url,timeout=12) as r:
                       v=json.load(r)
-                  if v.get('ok') and v.get('build')=='0.2.0':
+                  if v.get('ok') and v.get('build')=='0.3.0':
                       print('Public HTTPS healthy:',v)
                       break
               except Exception as ex: print('probe',i,type(ex).__name__,str(ex)[:100])
@@ -43,6 +43,10 @@ jobs:
         run: python tests/browser_public.py
         env:
           NMD_PUBLIC_BASE: https://night-market-duel-dome.onrender.com
+      - name: Verify market pacts, purchase and forging in live browser
+        run: python tests/browser_depth.py
+        env:
+          NMD_PUBLIC_BASE: https://night-market-duel-dome.onrender.com
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -50,5 +54,7 @@ jobs:
           path: |
             evidence/network-public.json
             evidence/browser-public.json
+            evidence/browser-depth.json
+            evidence/v03-*.png
             evidence/*-mobile-*.png
           if-no-files-found: ignore

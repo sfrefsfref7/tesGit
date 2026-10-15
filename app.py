@@ -13,7 +13,7 @@ from urllib.parse import urlparse
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from game import GameError, HEROES, ITEMS, Player, Room, code, valid_hero, valid_name, RECONNECT_SECONDS
+from game import GameError, HEROES, ITEMS, BOONS, Player, Room, code, valid_hero, valid_name, RECONNECT_SECONDS
 import secrets
 
 ROOT = Path(__file__).parent
@@ -96,7 +96,7 @@ async def index():
 
 @app.get('/health')
 async def health():
-    return JSONResponse({'ok':True,'rooms':len(rooms),'build':'0.2.0','mode':'hosted' if os.environ.get('RENDER') else 'local'},headers={'Cache-Control':'no-store'})
+    return JSONResponse({'ok':True,'rooms':len(rooms),'build':'0.3.0','mode':'hosted' if os.environ.get('RENDER') else 'local'},headers={'Cache-Control':'no-store'})
 
 @app.websocket('/ws')
 async def websocket_endpoint(ws:WebSocket):
@@ -110,7 +110,7 @@ async def websocket_endpoint(ws:WebSocket):
     await ws.accept()
     room=None; player=None
     try:
-        await safe_send(ws,dict(type='hello',heroes=HEROES,items=ITEMS,build='0.2.0'))
+        await safe_send(ws,dict(type='hello',heroes=HEROES,items=ITEMS,boons=BOONS,build='0.3.0'))
         count=0; bucket=time.monotonic()
         while True:
             data=await ws.receive_text()
