@@ -1,0 +1,54 @@
+name: Night Market Duel - Public Online Acceptance
+on:
+  push:
+    branches: [night-market-duel-release-20261015]
+    paths:
+      - '**'
+  workflow_dispatch:
+jobs:
+  public-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install -r requirements.txt pytest httpx playwright
+      - run: python -m pytest -q
+      - name: Wait for public HTTPS server and confirm app version
+        shell: bash
+        run: |
+          python - <<'PY'
+          import time,urllib.request,json
+          url='https://night-market-duel-dome.onrender.com/health'
+          for i in range(45):
+              try:
+                  with urllib.request.urlopen(url,timeout=12) as r:
+                      v=json.load(r)
+                  if v.get('ok') and v.get('build')=='0.2.0':
+                      print('Public HTTPS healthy:',v)
+                      break
+              except Exception as ex: print('probe',i,type(ex).__name__,str(ex)[:100])
+              time.sleep(8)
+          else: raise SystemExit('Public HTTPS /health unavailable')
+          PY
+      - name: Verify two independent connections through PUBLIC WSS
+        run: python tests/public_smoke.py
+        env:
+          NMD_PUBLIC_BASE: https://night-market-duel-dome.onrender.com
+      - name: Install Chromium browser
+        run: python -m playwright install --with-deps chromium
+      - name: Two mobile-sized browser contexts create, join, battle
+        run: python tests/browser_public.py
+        env:
+          NMD_PUBLIC_BASE: https://night-market-duel-dome.onrender.com
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: night-market-public-acceptance
+          path: |
+            evidence/network-public.json
+            evidence/browser-public.json
+            evidence/*-mobile-*.png
+          if-no-files-found: ignore
