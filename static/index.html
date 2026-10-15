@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <meta name="theme-color" content="#0b1420"/>
+  <meta name="description" content="Night Market Duel — an original online strategy battler for two friends."/>
+  <title>Night Market Duel · The Arcane Bazaar</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml"/>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+  <div class="mist mist-a"></div><div class="mist mist-b"></div>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark">✦</div><div class="brand-type"><span>NIGHT MARKET</span><small>DUEL • THE ARCANE BAZAAR</small></div></div>
+      <div class="header-right"><button class="sound-btn" id="soundBtn" title="Toggle sound" aria-label="Toggle sound">♪</button><div class="connection" id="connection"><i class="dot"></i><span>CONNECTING</span></div></div>
+    </header>
+    <main>
+      <section class="home-screen" id="homeScreen">
+        <div class="hero-banner"><div class="banner-overlay"></div><div class="banner-ornament">✦ <span>ENTER THE AFTER-HOURS</span> ✦</div><div class="banner-inner"><div class="eyebrow">A STRATEGY DUEL FOR TWO</div><h1>EVERY DEAL<br/><em>HAS A PRICE.</em></h1><p>Build a vicious collection of enchanted relics. Outsmart your rival. Rule the night market.</p><div class="banner-metrics"><span>⚔ REAL-TIME DUELS</span><span>✧ 4 UNIQUE HEROES</span><span>◈ FREE TO PLAY</span></div></div></div>
+        <div class="home-grid">
+          <div class="surface panel-join">
+            <div class="panel-heading"><div class="eyebrow">01 / SET YOUR LEGEND</div><h2>Choose your champion</h2><p>Every hero changes how you build your board.</p></div>
+            <div class="hero-picks" id="heroPicks" role="group" aria-label="Choose hero"></div>
+            <div class="field-wrap"><label for="playerName">YOUR DUELIST NAME</label><input id="playerName" autocomplete="nickname" maxlength="20" placeholder="Enter your name" value=""/></div>
+            <div class="duel-tabs" role="group" aria-label="Game mode"><button class="tab active" data-mode="friend">⚔ Play with a friend</button><button class="tab" data-mode="bot">✦ Challenge the AI</button></div>
+            <div id="friendControls"><button id="createBtn" class="gold-btn large"><span>CREATE PRIVATE ROOM</span><span>↗</span></button><div class="join-divider"><span>OR JOIN YOUR FRIEND</span></div><div class="join-row"><input id="roomInput" type="text" maxlength="5" inputmode="text" autocomplete="off" placeholder="ROOM CODE" aria-label="Room code"/><button class="outline-btn" id="joinBtn">JOIN ROOM →</button></div></div>
+            <div id="botControls" hidden><p class="bot-hint">Learn the market, find outrageous combos, and duel The Curator. No second player needed.</p><button id="botBtn" class="gold-btn large"><span>CHALLENGE THE CURATOR</span><span>↗</span></button></div>
+            <div class="form-error" role="alert" id="formError"></div>
+          </div>
+          <aside class="surface side-info"><div class="eyebrow">INSIDE THE MARKET</div><h2>Fortune favors<br/><em>the fearless.</em></h2><div class="feature"><div class="feature-symbol">◇</div><div><strong>Curate your arsenal</strong><p>Shop 16 enchanted items with unique abilities and synergies.</p></div></div><div class="feature"><div class="feature-symbol">♜</div><div><strong>Make every slot count</strong><p>Build your six-slot board. Positioning can turn defeat into victory.</p></div></div><div class="feature"><div class="feature-symbol">✦</div><div><strong>Clash in real time</strong><p>Both players witness the same server-controlled combat.</p></div></div><div class="side-footer">NO DOWNLOADS <span>✦</span> NO ACCOUNT REQUIRED</div></aside>
+        </div>
+      </section>
+      <section class="game-screen" id="gameScreen" hidden>
+        <div class="room-bar surface"><div><div class="eyebrow">THE PRIVATE ARENA</div><div class="room-line"><strong>ROOM <span id="roomCode">-----</span></strong><button class="tiny-btn" id="copyBtn" title="Copy invite link">↗ INVITE</button><button class="tiny-btn" id="leaveBtn" title="Leave room">LEAVE</button></div></div><div class="room-status"><span id="roundLabel">ROUND 1 / 3</span><span class="phase-pill" id="phaseLabel">WAITING</span></div></div>
+        <div class="game-grid">
+          <div class="arena-col">
+            <div class="arena surface" id="arena">
+              <canvas id="ambientCanvas" aria-hidden="true"></canvas>
+              <div class="arena-shade"></div><div class="arena-head"><div class="arena-overline">✦ &nbsp; THE MIDNIGHT COLISEUM &nbsp; ✦</div><div class="score-box"><span id="scoreA">0</span><i>:</i><span id="scoreB">0</span></div></div>
+              <div class="duelist-stage">
+                <div class="duelist" id="duelistA"><div class="portrait"><img id="portraitA" src="/static/art/vex.svg" alt="Player 1 character"/><span class="portrait-sheen"></span></div><div class="fighter-name" id="nameA">WAITING...</div><div class="fighter-title" id="titleA">—</div><div class="hp-area"><div class="hp-text"><span>VITALITY</span><span id="hpA">—</span></div><div class="hp-track"><div class="hp-fill" id="hpBarA" style="width:100%"></div></div></div><div class="buffs" id="buffsA"></div></div>
+                <div class="vs-emblem"><span>VS</span><small id="combatTime">READY</small></div>
+                <div class="duelist" id="duelistB"><div class="portrait"><img id="portraitB" src="/static/art/nyra.svg" alt="Player 2 character"/><span class="portrait-sheen"></span></div><div class="fighter-name" id="nameB">AWAITING RIVAL</div><div class="fighter-title" id="titleB">—</div><div class="hp-area"><div class="hp-text"><span>VITALITY</span><span id="hpB">—</span></div><div class="hp-track"><div class="hp-fill" id="hpBarB" style="width:100%"></div></div></div><div class="buffs" id="buffsB"></div></div>
+              </div>
+              <div id="impactLayer" class="impact-layer"></div>
+              <div class="arena-bottom"><span id="stagePrompt">Invite a friend to begin your duel</span><span id="pingLabel">— MS</span></div>
+            </div>
+            <div class="combat-feed surface"><div class="feed-title">✧ BATTLE CHRONICLE <span id="feedStatus">AWAITING COMBAT</span></div><div class="feed-entries" id="eventFeed"><div class="feed-empty">The market remembers every move...</div></div></div>
+          </div>
+          <div class="market-col">
+            <div class="market surface">
+              <div class="market-header"><div><div class="eyebrow">02 / THE GRAND MARKET</div><h2 id="marketTitle">Prepare for battle</h2></div><div class="wallet"><span>YOUR PURSE</span><strong>◈ <span id="goldValue">14</span></strong></div></div>
+              <div class="opponent-line"><span>RIVAL STATUS</span><strong id="opponentStatus">Waiting for opponent...</strong></div>
+              <div class="shop-area" id="shopArea"><div class="section-head"><h3>Tonight's wares</h3><button class="tiny-btn" id="rerollBtn">↻ REROLL <b>2 ◈</b></button></div><div class="shop-grid" id="shopGrid"></div><div class="help-text">Tap an item to inspect it. Buy it for your board.</div></div>
+              <div class="board-area"><div class="section-head"><h3>Your arsenal <span>· 6 slots</span></h3><span class="slots-text" id="boardCount">0 / 6 EQUIPPED</span></div><div class="board-grid" id="boardGrid"></div><div class="help-text" id="boardHelp">Tap one equipped item, then another slot to swap.</div></div>
+              <div class="market-footer"><div class="phase-note" id="phaseNote"><span class="phase-note-icon">✦</span><span>Equip your arsenal, then signal that you're ready.</span></div><button id="readyBtn" class="gold-btn large">READY FOR DUEL <span>⚔</span></button><button id="rematchBtn" class="gold-btn large" hidden>REQUEST REMATCH <span>↗</span></button></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer><span>NIGHT MARKET DUEL • ORIGINAL GAME PROTOTYPE</span><span>BUILD 0.2.0 <i>✦</i> MADE FOR TWO</span></footer>
+  </div>
+  <div id="toast" class="toast" role="status"></div>
+  <div id="itemModal" class="modal" hidden><div class="modal-shade" data-close="true"></div><div class="modal-card" role="dialog" aria-modal="true" aria-label="Item details"><button class="modal-close" id="closeModal" aria-label="Close item details">×</button><div class="modal-item-art" id="modalArt"></div><div class="eyebrow" id="modalRarity">MAGICAL RELIC</div><h2 id="modalTitle">Item</h2><p id="modalDesc"></p><div class="modal-stats" id="modalStats"></div><button id="modalAction" class="gold-btn large">BUY ITEM</button></div></div>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>
