@@ -52,6 +52,7 @@ def run():
             if '03/06' in hour:break
             if page.locator('#encounterTitle').inner_text()=='Choose your path':
                 page.locator('#encounterContent .offer').first.click()
+                expect(page.locator('#encounterTitle')).not_to_have_text('Choose your path',timeout=12000)
             phase=page.locator('#encounterTitle').inner_text()
             if page.get_by_role('button',name='CONTINUE JOURNEY').count():
                 previous=page.locator('#journeyDay').inner_text()
