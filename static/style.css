@@ -29,3 +29,7 @@
 
 @media(max-width:760px){.shop-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.item-card{min-height:129px;padding:7px 5px}.item-card .item-art{height:56px}.item-card .item-name{font-size:10px}.item-card .item-price{font-size:11px}}
 @media(max-width:370px){.shop-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.item-card .item-name{font-size:9px}}
+
+.expedition-banner{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:14px 0 22px;padding:19px 22px;background:linear-gradient(105deg,#433220,#1e3041 70%);border:1px solid #af8c5c;color:#f7deaa;text-decoration:none;border-radius:6px;box-shadow:0 15px 40px #0006}
+.expedition-banner strong{font:700 17px Georgia,serif;letter-spacing:1px}.expedition-banner span{color:#d5d2c8;font-size:12px}.expedition-banner b{font-size:12px;white-space:nowrap}
+@media(max-width:600px){.expedition-banner{padding:17px}.expedition-banner strong{font-size:15px}}

@@ -96,7 +96,7 @@ async def index():
 
 @app.get('/health')
 async def health():
-    return JSONResponse({'ok':True,'rooms':len(rooms),'build':'0.3.0','mode':'hosted' if os.environ.get('RENDER') else 'local'},headers={'Cache-Control':'no-store'})
+    return JSONResponse({'ok':True,'rooms':len(rooms),'build':'0.5.0','mode':'hosted' if os.environ.get('RENDER') else 'local'},headers={'Cache-Control':'no-store'})
 
 @app.websocket('/ws')
 async def websocket_endpoint(ws:WebSocket):
@@ -110,7 +110,7 @@ async def websocket_endpoint(ws:WebSocket):
     await ws.accept()
     room=None; player=None
     try:
-        await safe_send(ws,dict(type='hello',heroes=HEROES,items=ITEMS,boons=BOONS,build='0.3.0'))
+        await safe_send(ws,dict(type='hello',heroes=HEROES,items=ITEMS,boons=BOONS,build='0.5.0'))
         count=0; bucket=time.monotonic()
         while True:
             data=await ws.receive_text()
@@ -202,3 +202,78 @@ async def websocket_endpoint(ws:WebSocket):
                 player.connected=False
                 player.disconnected_at=time.monotonic()
                 await broadcast(room)
+
+# Expedition is an independent game mode. The existing 1v1 protocol is preserved.
+from pydantic import BaseModel, Field
+from fastapi import Request
+from expedition import Run, CATALOG, SKILLS, BOARD_WIDTH, STASH_WIDTH, DAY_HOURS
+
+expeditions: dict[str, Run] = {}
+
+class ExpedStart(BaseModel):
+    name: str
+    hero: str
+
+class ExpedRequest(BaseModel):
+    token: str = Field(max_length=128)
+    op: str | None = Field(default=None, max_length=30)
+    id: str | None = Field(default=None, max_length=64)
+    index: int | None = None
+    uid: str | None = Field(default=None, max_length=32)
+    slot: int | None = None
+    effect: str | None = Field(default=None, max_length=32)
+    choice: str | None = Field(default=None, max_length=32)
+
+
+def same_origin(req:Request):
+    origin=req.headers.get('origin')
+    if origin:
+        parsed=urlparse(origin)
+        if not parsed.hostname or parsed.hostname.lower()!=req.url.hostname.lower():
+            raise GameError('Origin not allowed.')
+
+@app.get('/expedition')
+async def expedition_page():
+    return FileResponse(ROOT/'static'/'expedition.html',headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'})
+
+@app.post('/api/expedition/start')
+async def expedition_start(req:Request, payload:ExpedStart):
+    try:
+        same_origin(req)
+        now=time.monotonic()
+        # Clean old independent sessions, never touch room-based multiplayer.
+        for k,v in list(expeditions.items()):
+            if now-v.last_active>3*3600:expeditions.pop(k,None)
+        if len(expeditions)>=400:raise GameError('Expedition server is busy. Try again shortly.')
+        run=Run(payload.name,payload.hero)
+        expeditions[run.token]=run
+        return JSONResponse({'token':run.token,'state':run.public()},headers={'Cache-Control':'no-store'})
+    except GameError as exc:
+        return JSONResponse({'ok':False,'error':str(exc)},status_code=400)
+
+@app.post('/api/expedition/state')
+async def expedition_state(req:Request, payload:ExpedRequest):
+    try:
+        same_origin(req)
+        run=expeditions.get(payload.token)
+        if not run:raise GameError('Session expired. Start a new expedition.')
+        return JSONResponse({'state':run.public()},headers={'Cache-Control':'no-store'})
+    except GameError as exc:
+        return JSONResponse({'ok':False,'error':str(exc)},status_code=400)
+
+@app.post('/api/expedition/action')
+async def expedition_action(req:Request, payload:ExpedRequest):
+    try:
+        same_origin(req)
+        run=expeditions.get(payload.token)
+        if not run:raise GameError('Session expired. Start a new expedition.')
+        if not payload.id or len(payload.id)<6:raise GameError('Missing action ID.')
+        if payload.id in run.seen:
+            return JSONResponse({'state':run.public(),'duplicate':True,'result':run.seen[payload.id]},headers={'Cache-Control':'no-store'})
+        if not payload.op:raise GameError('Missing action.')
+        result=run.action(payload.op,payload.model_dump(exclude_none=True))
+        run.seen[payload.id]=result
+        if len(run.seen)>150:run.seen.pop(next(iter(run.seen)))
+        return JSONResponse({'state':run.public(),'result':result},headers={'Cache-Control':'no-store'})
+    except GameError as exc:
+        return JSONResponse({'ok':False,'error':str(exc)},status_code=400,headers={'Cache-Control':'no-store'})

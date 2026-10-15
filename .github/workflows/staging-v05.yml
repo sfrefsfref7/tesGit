@@ -1,0 +1,48 @@
+name: Night Market Duel v0.5 Expedition Acceptance
+on:
+  push:
+    branches: [night-market-duel-v05-staging]
+  workflow_dispatch:
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Dependencies
+        run: python -m pip install -r requirements.txt pytest httpx playwright
+      - name: Authoritative game and regression tests
+        run: python -m pytest -q
+      - name: Javascript syntax
+        run: |
+          node --check static/app.js
+          node --check static/expedition.js
+      - name: Install Chromium
+        run: python -m playwright install --with-deps chromium
+      - name: Local mobile browser E2E (no live production touched)
+        run: |
+          mkdir -p evidence
+          python -m uvicorn app:app --host 127.0.0.1 --port 3956 > evidence/staging-v05-server.log 2>&1 &
+          python - <<'PY'
+          import urllib.request,time
+          for i in range(25):
+              try:
+                  h=urllib.request.urlopen('http://127.0.0.1:3956/health',timeout=3)
+                  assert h.status==200
+                  break
+              except Exception:time.sleep(1)
+          else:raise SystemExit('V0.5 staging server did not start')
+          PY
+          python tests/browser_expedition.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: night-market-v05-evidence
+          if-no-files-found: warn
+          path: |
+            evidence/v05-*.png
+            evidence/v05-browser-expedition.json
+            evidence/staging-v05-server.log

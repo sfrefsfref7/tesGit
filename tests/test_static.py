@@ -10,7 +10,7 @@ def test_frontend_and_assets_available():
             assert response.status_code==200, path
             assert expected in response.headers.get('content-type',''), path
             assert len(response.content)>300
-        assert c.get('/health').json()['build']=='0.3.0'
+        assert c.get('/health').json()['build']=='0.5.0'
         assert c.get('/app.py').status_code==404
         assert c.get('/game.py').status_code==404
         assert c.get('/requirements.txt').status_code==404

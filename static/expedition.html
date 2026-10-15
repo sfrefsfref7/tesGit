@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#111a29"><meta name="description" content="Night Market Expedition — deep, original fantasy market roguelike"><title>Night Market — Expedition</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/static/expedition.css?v=0.5.0"></head>
+<body>
+<div class="world-glow"></div>
+<header class="top"><a class="brand" href="/">✦ <span>THE NIGHT MARKET <small>EXPEDITION · ORIGINAL ROGUELIKE</small></span></a><div class="top-actions"><a href="/" class="nav-btn">⚔ LIVE 1v1</a><span id="connectionLabel" class="connected">● CONNECTING</span></div></header>
+<main class="shell">
+<section id="opening" class="opening">
+  <div class="opening-art"><span class="overline">THE MIDNIGHT EXCHANGE · SEASON ONE</span><h1>YOUR FORTUNE<br><em>IS NEVER FREE.</em></h1><p>Six encounters per day. Ten victory crests. A market full of impossible combinations. Make your living from deals that should never have been made.</p><div class="smallstats"><span>✦ <b>10-SLOT</b> BOARD</span><span>✦ <b>88</b> ARTIFACTS</span><span>✦ <b>ORIGINAL</b> HEROES</span></div></div>
+  <div class="start-panel"><div class="eyebrow">01 / CHOOSE A FATE</div><h2>Begin your expedition</h2><p class="subtitle">A single-player PvE run. Your friend can challenge you in <a href="/">Live Duel</a>.</p><div class="hero-select" id="heroes"></div><label class="field-label" for="playerName">YOUR NAME</label><input id="playerName" maxlength="20" placeholder="Enter your name" autocomplete="nickname"><button id="startBtn" class="primary">ENTER THE NIGHT MARKET ↗</button><p id="openingError" class="error" role="alert"></p><div class="save-note">Progress is kept temporarily on this free server. Hosting restarts may reset an expedition.</div></div>
+</section>
+<section id="game" hidden>
+  <div class="journey-stats"><div class="journey-stat"><span>DAY / HOUR</span><b id="journeyDay">01 · 01/06</b></div><div class="journey-stat"><span>GOLD</span><b id="journeyGold">◈ 14</b></div><div class="journey-stat"><span>LEVEL / XP</span><b id="journeyLevel">1 · 0/8</b></div><div class="journey-stat"><span>PRESTIGE</span><b id="journeyPrestige">♛ 20</b></div><div class="journey-stat"><span>VICTORY CRESTS</span><b id="journeyWins">0 / 10</b></div><button class="nav-btn new-run" id="newRunBtn">NEW RUN</button></div>
+  <div class="run-grid">
+    <div class="left-col">
+      <section class="surface journey-hero"><div class="journey-portrait"><img id="myPortrait" src="/static/art/nyra.svg" alt="Your hero"></div><div class="hero-details"><div class="eyebrow">YOUR MERCHANT LEGEND</div><h2 id="myName">Traveller</h2><div id="myClass" class="hero-class">A NIGHT MARKET MERCHANT</div><p id="heroHealth">MAX HEALTH · 280</p><div class="health-track"><div id="healthTrack"></div></div></div></section>
+      <section class="surface board-panel"><div class="heading-row"><div><div class="eyebrow">02 / YOUR ARSENAL</div><h2>Battle Board <small id="boardUsed">0 / 4 unlocked</small></h2></div><button id="clearSelection" class="ghost">CLEAR SELECTION</button></div><p class="hint">Select an item, then tap an open board slot to equip. A Medium uses two spaces; a Large uses three. Only equipped items fight.</p><div class="board-scroller"><div id="board" class="board-track" aria-label="Ten slot battle board"></div></div><div class="board-guide">S · 1 SLOT <span>✧</span> M · 2 SLOTS <span>✧</span> L · 3 SLOTS</div>
+        <div class="heading-row secondary-heading"><h3>Stash <small id="stashUsed">0 / 10</small></h3><span class="hint">Tap to inspect & equip</span></div><div id="stash" class="stash-grid"></div>
+      </section>
+      <section class="surface skill-panel"><div class="heading-row"><h3>Permanent Skills <small id="skillCount">0 / 6</small></h3></div><div id="skills" class="skills-grid"></div></section>
+      <section class="surface story-panel"><div class="eyebrow">EXPEDITION CHRONICLE</div><div id="chronicle" class="chronicle"></div></section>
+    </div>
+    <div class="right-col"><section class="surface encounter-panel"><div class="heading-row"><div><div class="eyebrow">03 / THE LIVING MARKET</div><h2 id="encounterTitle">Choose your path</h2></div><span id="encounterBadge" class="badge">DAY 1</span></div><p class="encounter-intro" id="encounterIntro">Each choice shapes the combat ahead.</p><div id="encounterContent"></div><div id="encounterActions"></div></section>
+      <section class="surface compendium"><h3>Beyond the Veil</h3><p>Every hour offers fresh shops, master trainers, dangerous hunts and strange decisions. Combine identical cards, enchant at a trainer, and build combos around your hero.</p><div class="micro-grid"><span>⚙ COOLDOWN</span><span>☠ POISON</span><span>🔥 BURN</span><span>◆ SHIELD</span><span>❄ FREEZE</span><span>✧ HASTE</span></div></section>
+    </div>
+  </div>
+</section>
+<footer>ORIGINAL GAMEPLAY & ART DIRECTION · NIGHT MARKET DUEL · BUILD 0.5.0 · <a href="/">FRIEND 1v1</a></footer>
+</main>
+<div class="toast" role="status" id="toast"></div>
+<div class="modal" id="itemModal" hidden><div class="scrim" data-close="yes"></div><div class="item-modal-box"><button class="close" id="closeModal" aria-label="Close">×</button><div class="eyebrow" id="modalTag">ARTIFACT</div><div id="modalGlyph" class="modal-glyph">✧</div><h2 id="modalName">Item</h2><p id="modalDescription"></p><div id="modalProperties" class="properties"></div><div id="modalButtons" class="modal-buttons"></div></div></div>
+<div class="battle-modal" id="battleModal" hidden><div class="battle-bg"></div><div class="battle-frame"><div class="eyebrow">THE MIDNIGHT COLISEUM</div><h2 id="battleTitle">The Duel Begins</h2><div class="battle-stage"><div class="combatant"><img id="battleMeArt" src="/static/art/vex.svg" alt="Hero"><b id="battleMe">YOUR HERO</b><div class="battle-hp"><div id="battleMeHpBar"></div></div><span id="battleMeHp">280 / 280</span></div><div class="battle-center"><span>⚔</span><b id="battleClock">0:00</b></div><div class="combatant"><img id="battleEnemyArt" src="/static/art/bronn.svg" alt="Rival"><b id="battleEnemy">RIVAL</b><div class="battle-hp"><div id="battleEnemyHpBar"></div></div><span id="battleEnemyHp">280 / 280</span></div></div><div id="battleEvents" class="battle-events"></div><button id="battleSkip" class="primary">SKIP TO RESULT →</button></div></div>
+<script src="/static/expedition.js?v=0.5.0" defer></script>
+</body></html>
