@@ -26,3 +26,6 @@
 .float-text.reflect{color:#f4a5c5}
 @media(max-width:760px){.boon-area{padding:12px 8px;margin:12px 0 18px}.boon-grid{gap:5px}.boon-card{min-height:137px;padding:8px 4px 6px;gap:5px}.boon-card strong{font-size:10px}.boon-card>span:not(.boon-glyph){font-size:9px}.boon-glyph{height:35px;width:35px;font-size:23px}.shop-grid{gap:4px}.item-card{min-height:112px;padding:4px 2px 5px}.item-card .item-art{height:47px}.item-card .item-name{font-size:8px}.item-card .item-price{font-size:10px}}
 @media(max-width:380px){.boon-card strong{font-size:9px}.boon-card>span:not(.boon-glyph){font-size:8px}.shop-grid{gap:3px}.item-card .item-name{font-size:7px}.item-card .item-art{height:43px}.board-slot .forge-level{font-size:7px}}
+
+@media(max-width:760px){.shop-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.item-card{min-height:129px;padding:7px 5px}.item-card .item-art{height:56px}.item-card .item-name{font-size:10px}.item-card .item-price{font-size:11px}}
+@media(max-width:370px){.shop-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.item-card .item-name{font-size:9px}}

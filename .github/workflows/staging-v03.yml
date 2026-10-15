@@ -19,6 +19,7 @@ jobs:
         run: python -m playwright install --with-deps chromium
       - name: Launch staging server, verify browser game with two players
         run: |
+          mkdir -p evidence
           nohup python -m uvicorn app:app --host 127.0.0.1 --port 3955 > evidence/staging-server.log 2>&1 &
           python - <<'PY'
           import time,urllib.request
