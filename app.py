@@ -96,7 +96,7 @@ async def index():
 
 @app.get('/health')
 async def health():
-    return JSONResponse({'ok':True,'rooms':len(rooms),'build':'0.6.0','mode':'hosted' if os.environ.get('RENDER') else 'local'},headers={'Cache-Control':'no-store'})
+    return JSONResponse({'ok':True,'rooms':len(rooms),'build':'0.7.0','mode':'hosted' if os.environ.get('RENDER') else 'local'},headers={'Cache-Control':'no-store'})
 
 @app.websocket('/ws')
 async def websocket_endpoint(ws:WebSocket):
@@ -110,7 +110,7 @@ async def websocket_endpoint(ws:WebSocket):
     await ws.accept()
     room=None; player=None
     try:
-        await safe_send(ws,dict(type='hello',heroes=HEROES,items=ITEMS,boons=BOONS,build='0.5.0'))
+        await safe_send(ws,dict(type='hello',heroes=HEROES,items=ITEMS,boons=BOONS,build='0.7.0'))
         count=0; bucket=time.monotonic()
         while True:
             data=await ws.receive_text()
@@ -213,6 +213,7 @@ expeditions: dict[str, Run] = {}
 class ExpedStart(BaseModel):
     name: str
     hero: str
+    guided: bool = False
 
 class ExpedRequest(BaseModel):
     token: str = Field(max_length=128)
@@ -245,7 +246,7 @@ async def expedition_start(req:Request, payload:ExpedStart):
         for k,v in list(expeditions.items()):
             if now-v.last_active>3*3600:expeditions.pop(k,None)
         if len(expeditions)>=400:raise GameError('Expedition server is busy. Try again shortly.')
-        run=Run(payload.name,payload.hero)
+        run=Run(payload.name,payload.hero,guided=payload.guided)
         expeditions[run.token]=run
         return JSONResponse({'token':run.token,'state':run.public()},headers={'Cache-Control':'no-store'})
     except GameError as exc:

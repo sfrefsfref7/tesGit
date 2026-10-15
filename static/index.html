@@ -7,7 +7,7 @@
   <meta name="description" content="Night Market Duel — an original online strategy battler for two friends."/>
   <title>Night Market Duel · Play 1v1 Online</title>
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml"/>
-  <link rel="stylesheet" href="/static/style.css?v=0.6.0"/>
+  <link rel="stylesheet" href="/static/style.css?v=0.7.0"/>
 </head>
 <body>
   <div class="mist mist-a"></div><div class="mist mist-b"></div>
@@ -41,9 +41,9 @@
               <canvas id="ambientCanvas" aria-hidden="true"></canvas>
               <div class="arena-shade"></div><div class="arena-head"><div class="arena-overline">✦ &nbsp; THE MIDNIGHT COLISEUM &nbsp; ✦</div><div class="score-box"><span id="scoreA">0</span><i>:</i><span id="scoreB">0</span></div></div>
               <div class="duelist-stage">
-                <div class="duelist" id="duelistA"><div class="portrait"><img id="portraitA" src="/static/art/vex.svg" alt="Player 1 character"/><span class="portrait-sheen"></span></div><div class="fighter-name" id="nameA">WAITING...</div><div class="fighter-title" id="titleA">—</div><div class="hp-area"><div class="hp-text"><span>VITALITY</span><span id="hpA">—</span></div><div class="hp-track"><div class="hp-fill" id="hpBarA" style="width:100%"></div></div></div><div class="buffs" id="buffsA"></div></div>
+                <div class="duelist" id="duelistA"><div class="portrait"><img id="portraitA" src="/static/art/vex-portrait.webp" alt="Player 1 character"/><span class="portrait-sheen"></span></div><div class="fighter-name" id="nameA">WAITING...</div><div class="fighter-title" id="titleA">—</div><div class="hp-area"><div class="hp-text"><span>VITALITY</span><span id="hpA">—</span></div><div class="hp-track"><div class="hp-fill" id="hpBarA" style="width:100%"></div></div></div><div class="buffs" id="buffsA"></div></div>
                 <div class="vs-emblem"><span>VS</span><small id="combatTime">READY</small></div>
-                <div class="duelist" id="duelistB"><div class="portrait"><img id="portraitB" src="/static/art/nyra.svg" alt="Player 2 character"/><span class="portrait-sheen"></span></div><div class="fighter-name" id="nameB">AWAITING RIVAL</div><div class="fighter-title" id="titleB">—</div><div class="hp-area"><div class="hp-text"><span>VITALITY</span><span id="hpB">—</span></div><div class="hp-track"><div class="hp-fill" id="hpBarB" style="width:100%"></div></div></div><div class="buffs" id="buffsB"></div></div>
+                <div class="duelist" id="duelistB"><div class="portrait"><img id="portraitB" src="/static/art/nyra-portrait.webp" alt="Player 2 character"/><span class="portrait-sheen"></span></div><div class="fighter-name" id="nameB">AWAITING RIVAL</div><div class="fighter-title" id="titleB">—</div><div class="hp-area"><div class="hp-text"><span>VITALITY</span><span id="hpB">—</span></div><div class="hp-track"><div class="hp-fill" id="hpBarB" style="width:100%"></div></div></div><div class="buffs" id="buffsB"></div></div>
               </div>
               <div id="impactLayer" class="impact-layer"></div>
               <div class="arena-bottom"><span id="stagePrompt">Invite a friend to begin your duel</span><span id="pingLabel">— MS</span></div>
@@ -63,10 +63,10 @@
         </div>
       </section>
     </main>
-    <footer><span>NIGHT MARKET DUEL • ORIGINAL ONLINE STRATEGY GAME</span><span>BUILD 0.4.0 + EXPEDITION <i>✦</i> MADE FOR TWO</span></footer>
+    <footer><span>NIGHT MARKET DUEL • ORIGINAL ONLINE STRATEGY GAME</span><span>BUILD 0.7.0 · EXPEDITION <i>✦</i> MADE FOR TWO</span></footer>
   </div>
   <div id="toast" class="toast" role="status"></div>
   <div id="itemModal" class="modal" hidden><div class="modal-shade" data-close="true"></div><div class="modal-card" role="dialog" aria-modal="true" aria-label="Item details"><button class="modal-close" id="closeModal" aria-label="Close item details">×</button><div class="modal-item-art" id="modalArt"></div><div class="eyebrow" id="modalRarity">MAGICAL RELIC</div><h2 id="modalTitle">Item</h2><p id="modalDesc"></p><div class="modal-stats" id="modalStats"></div><button id="modalAction" class="gold-btn large">BUY ITEM</button><button id="modalForge" class="forge-btn" hidden>✦ FORGE +1</button></div></div>
-  <script src="/static/app.js?v=0.6.0" defer></script>
-</body>
+  <script src="/static/app.js?v=0.7.0" defer></script>
+<script src="/static/game-vfx.js?v=0.7.0" defer></script></body>
 </html>

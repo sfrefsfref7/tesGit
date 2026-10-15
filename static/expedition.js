@@ -5,7 +5,7 @@
 const $ = (id) => document.getElementById(id);
 const state = { run: null, token: null, selected: null, hero: 'nyra', pending: false, animation: null, modal: false };
 const tokenKey = 'nightMarket:expedition:v05'; // session format deliberately unchanged for existing runs
-const art = (key) => `/static/art/${['vex','nyra','bronn','cael'].includes(key) ? key : 'vex'}.svg`;
+const art = (key) => `/static/art/${['vex','nyra','bronn','cael'].includes(key) ? key : 'vex'}-portrait.webp`;
 const icons = { dagger:'⚔', bow:'➶', gear:'⚙', flame:'✹', heart:'✚', lotus:'❀', vial:'⚗', shield:'◆', fang:'♜', clock:'◷', spark:'ϟ', mirror:'◇', rune:'✧' };
 const tierLabels = ['BRONZE', 'SILVER', 'GOLD', 'DIAMOND'];
 const escapeHTML = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -56,7 +56,7 @@ async function start(){
   if(state.pending)return;
   $('openingError').textContent='';busy(true);
   try{
-    const response=await post('start',{name:$('playerName').value.trim()||'Night Wanderer',hero:state.hero});
+    const response=await post('start',{name:$('playerName').value.trim()||'Night Wanderer',hero:state.hero,guided:true});
     state.token=response.token;localStorage.setItem(tokenKey,response.token);
     state.run=response.state;state.selected=null;render();toast('Your expedition begins');
   }catch(err){$('openingError').textContent=err.message;toast(err.message,true);}
@@ -163,12 +163,18 @@ function renderEncounter(){
   const r=state.run,body=empty($('encounterContent')),actions=empty($('encounterActions'));actions.className='encounter-actions';
   $('encounterBadge').textContent=`DAY ${r.day} · HOUR ${r.hour}`;
   const grid=document.createElement('div');grid.className='offers';body.append(grid);
-  if(r.phase==='route'){
+  if(r.phase==='starter'||r.phase==='levelup'){
+    $('encounterTitle').textContent=r.phase==='starter'?'Choose your opening advantage':'LEVEL UP — CLAIM A REWARD';
+    $('encounterIntro').textContent=r.phase==='starter'?'Three different openings: wealth, enchanted equipment, or permanent knowledge.':'Choose one upgrade before moving on to your next encounter.';
+    for(const opt of r.offers){
+      grid.append(offerCard(opt.title,opt.text,opt.icon,'CHOOSE YOUR REWARD',()=>action(r.phase==='starter'?'starter':'level_reward',{choice:opt.key}),'rare'));
+    }
+  }else if(r.phase==='route'){
     $('encounterTitle').textContent='Choose your path';$('encounterIntro').textContent='Pick one of three encounters. Every choice consumes one hour.';
     const map={merchant:'◈',trainer:'✦',monster:'⚔',rival:'♜',event:'✧',rest:'❀'};
     r.route.forEach((e,i)=>grid.append(offerCard(e.title,e.description,map[e.type]||'✧',`ENCOUNTER ${i+1} · ${e.type.toUpperCase()}`,()=>action('choose',{index:i}))));
   }else if(r.phase==='merchant'){
-    $('encounterTitle').textContent=r.selected.title||'The Merchant';$('encounterIntro').textContent='Tap a card to buy. New items go to your stash; make space before purchase.';
+    $('encounterTitle').textContent=r.selected.title||'The Merchant';$('encounterIntro').textContent='This merchant specializes in '+(r.selected.merchantTag||'mixed')+' items. Purchased items go into your Stash.';
     r.offers.forEach((off,i)=>{const item=r.catalog[off.key];if(!item)return;grid.append(offerCard(item.name,`${item.size} slot · ${item.type} · ${item.cooldown}s`,itemGlyph(item),`${off.price} ◈ · ${item.rarity.toUpperCase()}`,()=>action('buy',{index:i}),item.rarity,r.gold<off.price));});
     actions.append(actionButton('↻ REROLL MERCHANT · 2 GOLD',()=>action('reroll')));
     actions.append(actionButton('CONTINUE JOURNEY →',()=>action('leave'),true));
@@ -183,7 +189,10 @@ function renderEncounter(){
     actions.append(actionButton('SKIP ENCOUNTER →',()=>action('leave')));
   }else if(r.phase==='encounter'){
     $('encounterTitle').textContent=r.selected.title||'Enemy ahead';$('encounterIntro').textContent=`${r.selected.type==='rival'?'VICTORY CREST BATTLE':'MONSTER HUNT'} · Your current equipped board will enter combat.`;
-    grid.append(offerCard(r.selected.title,'The server determines every attack, status and reward.','⚔','ENEMY ENCOUNTER',()=>action('fight')));
+    const loadout=r.enemyLoadout||[];
+    grid.append(offerCard(r.selected.title,`${r.selected.rank||"SILVER"} · ${loadout.length} scouted items · Reward: ${r.selected.rewardGold||4} Gold + ${r.selected.rewardXP||3} XP`,'⚔','ENEMY SCOUT REPORT',()=>{},'epic',true));
+    for(const key of loadout){const item=r.catalog[key];if(item)grid.append(offerCard(item.name,`${item.size} slot · ${item.type} · ${Number(item.cooldown).toFixed(1)}s cooldown`,itemGlyph(item),`${item.rarity.toUpperCase()} · ENEMY EQUIPMENT`,()=>{},item.rarity,true));}
+
     actions.append(actionButton('⚔ ENGAGE IN COMBAT',()=>action('fight'),true));
   }else if(r.phase==='won'||r.phase==='lost'){
     $('encounterTitle').textContent=r.phase==='won'?'THE NIGHT BELONGS TO YOU':'THE MARKET CLAIMS ITS DEBT';
@@ -196,10 +205,10 @@ function render(){
   $('opening').hidden=true;$('game').hidden=false;
   $('journeyDay').textContent=`${String(r.day).padStart(2,'0')} · ${String(r.hour).padStart(2,'0')}/06`;
   $('journeyGold').textContent=`◈ ${r.gold}`;$('journeyLevel').textContent=`${r.level} · ${r.xp}/8`;
-  $('journeyPrestige').textContent=`♛ ${r.prestige}`;$('journeyWins').textContent=`${r.wins} / 10`;
+  $('journeyIncome').textContent=`◈ ${r.income||5}/day`;$('journeyPrestige').textContent=`♛ ${r.prestige}`;$('journeyWins').textContent=`${r.wins} / 10`;
   $('myPortrait').src=art(r.hero);$('myName').textContent=r.name;$('myClass').textContent=r.heroCatalog[r.hero]?.title||r.hero;
   $('heroHealth').textContent=`MAX HEALTH · ${r.maxHealth}`;$('healthTrack').style.width=`${Math.max(0,Math.min(100,r.prestige/20*100))}%`;
-  renderBoard();renderSkills();renderEncounter();
+  renderBoard();renderSkills();renderEncounter();window.dispatchEvent(new CustomEvent('nightmarket:render',{detail:{catalog:r.catalog,skills:r.skillCatalog}}));
   empty($('chronicle'));for(const row of r.history){const p=document.createElement('p');p.textContent=row;$('chronicle').append(p);}
   document.querySelectorAll('[data-action]').forEach(b=>b.disabled=b.disabled||state.pending);
 }

@@ -92,3 +92,30 @@ body:before{content:'';z-index:-2;pointer-events:none;position:fixed;inset:0;bac
  .settings-panel{top:65px}.battle-frame{padding:11px}.battle-frame h2{font-size:25px}.combatant img{height:140px}.battle-center span{font-size:31px}.battle-stage{grid-template-columns:1fr 44px 1fr}.item-modal-box{padding:18px}.modal-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}.modal-buttons button{font-size:10px}.toast{bottom:90px}
 }
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+
+/* v0.6 Hero Legends — original illustrated character atlas and client-only hit feedback */
+.hero-pick img,.hero-card img,.journey-portrait img,.combatant img,.duelist .portrait img{object-fit:cover;object-position:50% 32%;background:radial-gradient(circle at 50% 20%,#b79065,#122338 70%)}
+.hero-pick img,.hero-card img{transition:transform .25s ease,filter .25s ease;filter:saturate(.92)}
+.hero-pick:hover img,.hero-card:hover img,.hero-pick.selected img,.hero-card.selected img{transform:scale(1.035);filter:saturate(1.22) brightness(1.07)}
+.duelist .portrait img,.journey-portrait img,.combatant img{filter:drop-shadow(0 12px 22px #020713aa)}
+.duelist.hit-flash,.combatant.hit-flash{animation:hit-v06 .24s both}
+@keyframes hit-v06{0%{filter:brightness(1)}30%{filter:brightness(1.6) sepia(.25)}100%{filter:none}}
+.fx-burst{position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden;isolation:isolate}
+.fx-burst .spark{position:absolute;left:50%;top:45%;width:5px;height:20px;background:linear-gradient(180deg,#fff9cf,#ed9e3a00);border-radius:8px;transform-origin:50% 40%;animation:spark-v06 .48s ease-out forwards;filter:drop-shadow(0 0 8px #ffc661)}
+@keyframes spark-v06{0%{opacity:0;transform:rotate(var(--a)) translateY(0) scale(.3)}25%{opacity:1}100%{opacity:0;transform:rotate(var(--a)) translateY(var(--r)) scale(.12)}}
+.hero-card.selected:after,.hero-pick.selected:after{content:'✦';position:absolute;top:8px;right:9px;color:#ffdf8e;text-shadow:0 0 12px #f9c06b}
+.reduce-fx .fx-burst,.reduce-fx .hit-flash{display:none!important}
+@media(prefers-reduced-motion:reduce){.fx-burst{display:none!important}.hit-flash{animation:none!important}}
+
+/* Character viewfinder for crisp original portraits */
+.duelist,.combatant {position:relative;isolation:isolate}
+.combatant .fx-burst,.duelist .fx-burst{border-radius:10px}
+@media(max-width:570px){.fx-burst .spark{width:3px;height:13px}}
+
+/* v0.7 collection and planning screens */
+.codex-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:9px;max-height:360px;overflow:auto;padding:8px 0}
+.codex-entry{min-height:105px;background:linear-gradient(145deg,rgba(22,36,51,.96),rgba(44,31,30,.92));border:1px solid #9a714f;border-radius:10px;padding:12px;color:#f3e1bb}
+.codex-entry b{display:block;font-size:13px;line-height:1.4}.codex-entry p{font-size:11px;line-height:1.45;color:#d6b995;margin:6px 0}
+.codex-entry small{color:#dba66c;letter-spacing:.12em}#collectionPanel input,#collectionPanel select{border:1px solid #9a714f;background:#192738;color:#f9e8c5;padding:10px;border-radius:7px;max-width:100%;font:inherit}
+#collectionPanel .heading-row{gap:10px;flex-wrap:wrap}

@@ -10,7 +10,7 @@ def test_frontend_and_assets_available():
             assert response.status_code==200, path
             assert expected in response.headers.get('content-type',''), path
             assert len(response.content)>300
-        assert c.get('/health').json()['build']=='0.6.0'
+        assert c.get('/health').json()['build']=='0.7.0'
         assert c.get('/app.py').status_code==404
         assert c.get('/game.py').status_code==404
         assert c.get('/requirements.txt').status_code==404
@@ -28,3 +28,16 @@ def test_frontend_has_all_required_actions_and_no_fixed_lan_link():
     assert "location.host" in js and "'wss:'" in js and "socket.bufferedAmount" in js
     assert '[hidden]{display:none!important}' in css
     assert '127.0.0.1' not in js and 'localhost' not in js
+
+
+def test_original_hero_art_assets_and_vfx_script():
+    from pathlib import Path
+    root=Path(__file__).parent.parent
+    for hero in ('vex','nyra','bronn','cael'):
+        path=root/'static'/'art'/f'{hero}-portrait.webp'
+        assert path.is_file() and path.stat().st_size > 10_000
+    assert (root/'static'/'expedition-glyphs.js').is_file()
+    assert (root/'static'/'game-vfx.js').is_file()
+    assert '-portrait.webp' in (root/'static'/'expedition.js').read_text()
+    assert 'game-vfx.js' in (root/'static'/'index.html').read_text()
+    assert 'game-vfx.js' in (root/'static'/'expedition.html').read_text()

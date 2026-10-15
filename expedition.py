@@ -195,6 +195,10 @@ class Run:
     last_active:float=field(default_factory=time.monotonic)
     seen:dict=field(default_factory=dict)
     history:list=field(default_factory=list)
+    guided:bool=False
+    pending_levels:int=0
+    enemy_loadout:list=field(default_factory=list)
+    income:int=5
 
     def __post_init__(self):
         self.name=valid_name(self.name)
@@ -204,6 +208,7 @@ class Run:
         first={'vex':'dagger','nyra':'venom','bronn':'ward','cael':'sundial'}[self.hero]
         self.obtain(first, board_slot=0)
         self.route=self.make_route()
+        if self.guided:self.phase='starter'
         self.history.append('Day 1 — entered the Midnight Exchange')
 
     def new_item(self,key,tier=None,enchant=None):
@@ -261,6 +266,49 @@ class Run:
         item=CATALOG[obj['key']]
         self.gold+=max(1,int(item['cost']*.5*(1.5**(obj['tier']-item['tier']))))+(3 if obj['enchant']=='Golden' else 0)+(2 if 'salvager' in self.skills else 0)
 
+    def starter_options(self):
+        return [
+            {'key':'economy','title':'Guild Patronage','text':'Receive 10 Gold and +2 permanent income.', 'icon':'◈'},
+            {'key':'enchantment','title':'Arcane Inheritance','text':'Receive a hero-aligned enchanted Small item.', 'icon':'✦'},
+            {'key':'training','title':'Master\'s Lesson','text':'Learn a permanent skill suited to your hero.', 'icon':'⚔'},
+        ]
+
+    def level_options(self):
+        return [
+            {'key':'fortify','title':'Vitality Training','text':'Gain 60 maximum Health.', 'icon':'❤'},
+            {'key':'fortune','title':'Merchant Dividend','text':'Receive 8 Gold immediately.', 'icon':'◈'},
+            {'key':'mastery','title':'Refine Your Craft','text':'Upgrade one equipped item by a tier, or gain 5 Gold.', 'icon':'⚒'},
+        ]
+
+    def choose_starter(self,key):
+        if self.phase!='starter':raise GameError('Starting choice is no longer available.')
+        if key not in {o['key'] for o in self.starter_options()}:raise GameError('Invalid starting option.')
+        if key=='economy': self.gold+=10;self.income+=2
+        elif key=='enchantment':
+            tag={'vex':'weapon','nyra':'potion','bronn':'machine','cael':'relic'}[self.hero]
+            options=[k for k,v in CATALOG.items() if v['tag']==tag and v['size']==1 and v['tier']==0]
+            if not options:options=[k for k,v in CATALOG.items() if v['size']==1 and v['tier']==0]
+            self.obtain(self.rng.choice(options),enchant=self.rng.choice(['Fiery','Toxic','Turbo','Shielded']))
+        else:
+            tag={'vex':'weapon','nyra':'potion','bronn':'machine','cael':'relic'}[self.hero]
+            candidates=[k for k,v in SKILLS.items() if v['tag']==tag]
+            self.skills.append(self.rng.choice(candidates))
+        self.phase='route'
+        self.history.insert(0,'Starting boon: '+next(o['title'] for o in self.starter_options() if o['key']==key))
+
+    def choose_level(self,key):
+        if self.phase!='levelup' or self.pending_levels<=0:raise GameError('Not at a level-up reward.')
+        if key not in {o['key'] for o in self.level_options()}:raise GameError('Unknown level-up reward.')
+        if key=='fortify':self.max_health+=60
+        elif key=='fortune':self.gold+=8
+        else:
+            possible=[uid for uid in dict.fromkeys(self.board) if uid and self.inventory[uid]['tier']<3]
+            if possible:self.inventory[self.rng.choice(possible)]['tier']+=1
+            else:self.gold+=5
+        self.pending_levels-=1
+        self.phase='levelup' if self.pending_levels else 'route'
+        self.history.insert(0, 'Level-up reward: '+key)
+
     def merchant_roll(self,count=4,tag=None):
         choices=[key for key,item in CATALOG.items() if (not tag or item['tag']==tag)]
         weights=[]
@@ -279,19 +327,24 @@ class Run:
 
     def make_route(self):
         if self.hour==3:
-            # The third hour is a guaranteed monster encounter: three difficulty flavors.
+            # Each choice has a different risk/reward profile, rather than cosmetic tiers.
             challengers=self.rng.sample(MONSTERS,3)
+            labels=('BRONZE','SILVER','GOLD')
             return [{'type':'monster','title':enemy[0], 'tag':enemy[1], 'style':enemy[2],
-                     'description':('Hunt a ' + enemy[2] + ' creature for Gold, XP and a random item')} for enemy in challengers]
+                     'difficulty':i, 'rank':labels[i],
+                     'rewardGold':4+self.day//2+3*i, 'rewardXP':3+i,
+                     'description':f'{labels[i]} HUNT · {4+self.day//2+3*i} Gold, {3+i} XP and a loot drop'}
+                    for i,enemy in enumerate(challengers)]
         if self.hour==DAY_HOURS: return [{'type':'rival','title':'The Midnight Duel','description':'Fight a rival phantom. Win to earn a victory crest.'}]
         candidates=[
-            {'type':'merchant','title':'Wandering Armorer','description':'Browse weaponry and enchanted wares'},
-            {'type':'merchant','title':'Curio Caravan','description':'Choose rare artifacts and magic'},
+            {'type':'merchant','title':'Wandering Armorer','description':'Weapons, fast strikes and blades','merchantTag':'weapon'},
+            {'type':'merchant','title':'Curio Caravan','description':'Relics and enchanted curios','merchantTag':'relic'},
             {'type':'trainer','title':'Master of Techniques','description':'Acquire special skills and enchantments'},
             {'type':'monster','title':'Hunt the Night','description':'Fight a creature for gold, XP and loot'},
             {'type':'event','title':self.rng.choice(EVENTS)[1],'description':'A strange opportunity approaches'},
             {'type':'event','title':'The Fortune Alley','description':'Take risks or safe rewards'},
-            {'type':'merchant','title':'Shadow Apothecary','description':'Potions and alchemy reagents'},
+            {'type':'merchant','title':'Shadow Apothecary','description':'Poisons, restoratives and reagents','merchantTag':'potion'},
+            {'type':'merchant','title':'Clockwork Artisan','description':'Mechanical devices and automatons','merchantTag':'machine'},
             {'type':'rest','title':'Quiet Courtyard','description':'Free gold, healing or preparation'},
         ]
         picks=self.rng.sample(candidates,3)
@@ -305,7 +358,7 @@ class Run:
         self.selected=e.copy()
         kind=e['type']
         if kind in ('merchant','trainer'):
-            self.offers=self.merchant_roll(5,'potion' if 'Apothecary' in e['title'] else None) if kind=='merchant' else self.rng.sample([k for k in SKILLS if k not in self.skills],min(3,len(SKILLS)-len(self.skills)))
+            self.offers=self.merchant_roll(5,e.get('merchantTag')) if kind=='merchant' else self.rng.sample([k for k in SKILLS if k not in self.skills],min(3,len(SKILLS)-len(self.skills)))
             self.phase=kind
         elif kind=='event':
             self.phase='event'
@@ -325,8 +378,12 @@ class Run:
             enemy=(e['title'],e.get('tag','weapon'),e.get('style','damage')) if kind=='monster' else self.rng.choice(MONSTERS)
             if kind=='rival':
                 enemy=('The Wandering Duelist' if self.day%2 else 'The Veiled Magistrate',self.rng.choice(('weapon','machine','potion','relic')),'damage')
-            self.selected={'type':kind,'title':enemy[0],'tag':enemy[1],'style':enemy[2],'day':self.day}
+            self.selected={'type':kind,'title':enemy[0],'tag':enemy[1],'style':enemy[2],'day':self.day,
+                           'difficulty':e.get('difficulty',1), 'rank':e.get('rank','SILVER'),
+                           'rewardGold':e.get('rewardGold',4+self.day//2),'rewardXP':e.get('rewardXP',3)}
             self.offers=['fight']
+            pool=[k for k,v in CATALOG.items() if v['tag']==self.selected['tag']]
+            self.enemy_loadout=[self.rng.choice(pool) for _ in range(min(7,2+self.day//2))]
 
     def advance(self):
         self.selected={};self.offers=[]
@@ -334,20 +391,25 @@ class Run:
         self.xp+=1
         while self.xp>=8 and self.level<20:
             self.level+=1;self.xp-=8;self.max_health+=42
+            if self.guided:self.pending_levels+=1
             self.gold+=4
             self.history.insert(0,f'Level {self.level}! Gained 42 max HP and 4 Gold')
         if self.hour>DAY_HOURS:
-            self.day+=1;self.hour=1;self.gold+=9+(3 if 'treasurer' in self.skills else 0)+(4 if 'deep_pockets' in self.skills else 0)
+            self.day+=1;self.hour=1;self.gold+=self.income+4+(3 if 'treasurer' in self.skills else 0)+(4 if 'deep_pockets' in self.skills else 0)
             self.history.insert(0,f'Day {self.day} begins — received income')
-        self.route=self.make_route();self.phase='route'
+        self.route=self.make_route();self.phase='levelup' if self.pending_levels else 'route'
 
     def available(self):
+        if self.phase=='starter':return self.starter_options()
+        if self.phase=='levelup':return self.level_options()
         if self.phase=='merchant':return [{'key':k,'price':CATALOG[k]['cost']} for k in self.offers]
         if self.phase=='trainer':return [{'key':k,'price':6+self.day} for k in self.offers]
         return self.offers
 
     def action(self,op:str,data:dict):
         if self.phase in ('won','lost'):raise GameError('Run has finished. Start a new run.')
+        if op=='starter':self.choose_starter(data.get('choice'));self.revision+=1;return None
+        if op=='level_reward':self.choose_level(data.get('choice'));self.revision+=1;return None
         if op=='choose':
             self.pick(data.get('index'));self.revision+=1;return None
         if op in ('equip','store','sell','combine','upgrade','enchant') and self.phase in ('route','merchant','trainer','event','rest','encounter'):
@@ -390,7 +452,7 @@ class Run:
         elif op=='reroll':
             if self.phase!='merchant':raise GameError('Not in a merchant encounter.')
             if self.gold<2:raise GameError('Need 2 Gold to refresh.')
-            self.gold-=2;self.offers=self.merchant_roll(5,'potion' if 'Apothecary' in self.selected.get('title','') else None)
+            self.gold-=2;self.offers=self.merchant_roll(5,self.selected.get('merchantTag'))
         elif op=='learn':
             if self.phase!='trainer':raise GameError('Not in a trainer encounter.')
             index=data.get('index')
@@ -441,8 +503,8 @@ class Run:
                 else:self.advance()
             else:
                 if result['victor']==0:
-                    self.gold+=4+self.day//2+(2 if 'scrapper' in self.skills else 0)
-                    self.xp+=3+(2 if 'bounty_hunter' in self.skills else 0)
+                    self.gold+=self.selected.get('rewardGold',4+self.day//2)+(2 if 'scrapper' in self.skills else 0)
+                    self.xp+=self.selected.get('rewardXP',3)+(2 if 'bounty_hunter' in self.skills else 0)
                     prize=self.merchant_roll(1)[0]
                     try:self.obtain(prize);self.history.insert(0,f'Monster defeated: claimed {CATALOG[prize]["name"]}')
                     except GameError:self.gold+=CATALOG[prize]['cost']//2
@@ -478,24 +540,23 @@ class Run:
         pool=[k for k,v in CATALOG.items() if v['tag']==enemy_tag]
         enemy_n=min(7,2+self.day//2)
         enemy_items=[]
-        while len(enemy_items)<enemy_n:
-            k=self.rng.choice(pool)
+        for k in (self.enemy_loadout or [self.rng.choice(pool) for _ in range(enemy_n)]):
             enemy_items.append({'uid':'enemy'+str(len(enemy_items)),'key':k,'tier':min(3,max(0,(self.day-2)//3)),'enchant':None})
         self.last_battle=simulate(self.hero,owned,self.max_health,self.skills,
                                   'bronn' if opponent['style']=='shield' else self.rng.choice(list(HEROES)),enemy_items,
-                                  max(175, 190+self.day*(39 if monster else 48)),[],self.rng)
+                                  max(175, 190+self.day*(39 if monster else 48)+(int(opponent.get('difficulty',1))-1)*65 if monster else 190+self.day*48),[],self.rng)
         self.last_battle['enemy']=opponent['title']
         self.last_battle['day']=self.day
         return self.last_battle
 
     def public(self):
         self.last_active=time.monotonic()
-        return {'ok':True,'build':'0.5.0','name':self.name,'hero':self.hero,'day':self.day,'hour':self.hour,
+        return {'ok':True,'build':'0.7.0','name':self.name,'hero':self.hero,'day':self.day,'hour':self.hour,
                 'gold':self.gold,'level':self.level,'xp':self.xp,'prestige':self.prestige,'wins':self.wins,
                 'losses':self.losses,'maxHealth':self.max_health,'boardLimit':self.board_limit,'board':list(self.board),'stash':list(self.stash),
                 'inventory':self.inventory,'skills':self.skills,'phase':self.phase,'route':self.route,
                 'selected':self.selected,'offers':self.available(),'battle':self.last_battle,
-                'revision':self.revision,'history':self.history[:12], 'catalog':CATALOG,'skillCatalog':SKILLS,
+                'revision':self.revision,'history':self.history[:12], 'income':self.income, 'enemyLoadout':self.enemy_loadout if self.phase=='encounter' else [], 'catalog':CATALOG,'skillCatalog':SKILLS,
                 'heroCatalog':HEROES}
 
 
