@@ -38,7 +38,7 @@ def run():
         expect(page.locator('.stash-item')).to_have_count(1,timeout=12000)
         page.locator('.stash-item').first.click()
         assert page.locator('#itemModal').is_visible()
-        page.get_by_role('button',name='EQUIP TO BOARD').click()
+        page.get_by_role('button',name='EQUIP TO BOARD',exact=True).click()
         assert not page.locator('#itemModal').is_visible()
         page.locator('.board-cell.open').nth(0).click()
         expect(page.locator('.board-item')).to_have_count(2,timeout=12000)
