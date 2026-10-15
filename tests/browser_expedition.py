@@ -2,7 +2,7 @@
 from __future__ import annotations
 import json, os, time
 from pathlib import Path
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 
 BASE=os.getenv('NMD_BASE','http://127.0.0.1:3956').rstrip('/')
 EVIDENCE=Path('evidence'); EVIDENCE.mkdir(exist_ok=True)
@@ -27,7 +27,7 @@ def run():
         merchant=page.locator('#encounterContent .offer').filter(has_text='Armorer').or_(page.locator('#encounterContent .offer').filter(has_text='Caravan')).or_(page.locator('#encounterContent .offer').filter(has_text='Apothecary'))
         assert merchant.count()>=1
         merchant.first.click()
-        assert page.locator('#encounterTitle').inner_text()!='Choose your path'
+        expect(page.locator('#encounterTitle')).not_to_have_text('Choose your path',timeout=12000)
         assert page.locator('#encounterContent .offer').count()>=4
         # Choose an affordable artifact by displayed offer price.
         bought=False
@@ -35,17 +35,18 @@ def run():
             if item.is_enabled():
                 item.click();bought=True;break
         assert bought
-        assert page.locator('.stash-item').count()==1
+        expect(page.locator('.stash-item')).to_have_count(1,timeout=12000)
         page.locator('.stash-item').first.click()
         assert page.locator('#itemModal').is_visible()
         page.get_by_role('button',name='EQUIP TO BOARD').click()
         assert not page.locator('#itemModal').is_visible()
         page.locator('.board-cell.open').nth(0).click()
-        assert page.locator('.board-item').count()==2
-        assert page.locator('.stash-item').count()==0
+        expect(page.locator('.board-item')).to_have_count(2,timeout=12000)
+        expect(page.locator('.stash-item')).to_have_count(0,timeout=12000)
         page.screenshot(path=str(EVIDENCE/'v05-expedition-market-mobile.png'),full_page=True)
         # Visit remaining encounters until forced monster hunt on hour three.
         page.get_by_role('button',name='CONTINUE JOURNEY').click()
+        page.wait_for_function("document.querySelector('#journeyDay').textContent.includes('02/06')",timeout=12000)
         for _ in range(8):
             hour=page.locator('#journeyDay').inner_text()
             if '03/06' in hour:break
@@ -53,18 +54,22 @@ def run():
                 page.locator('#encounterContent .offer').first.click()
             phase=page.locator('#encounterTitle').inner_text()
             if page.get_by_role('button',name='CONTINUE JOURNEY').count():
+                previous=page.locator('#journeyDay').inner_text()
                 page.get_by_role('button',name='CONTINUE JOURNEY').first.click()
+                page.wait_for_function('prev=>document.querySelector("#journeyDay").textContent!==prev',previous,timeout=12000)
             elif page.get_by_role('button',name='SKIP ENCOUNTER').count():
+                previous=page.locator('#journeyDay').inner_text()
                 page.get_by_role('button',name='SKIP ENCOUNTER').click()
+                page.wait_for_function('prev=>document.querySelector("#journeyDay").textContent!==prev',previous,timeout=12000)
             elif page.get_by_role('button',name='ENGAGE IN COMBAT').count():
                 page.get_by_role('button',name='ENGAGE IN COMBAT').click()
-                page.locator('#battleModal').wait_for(state='visible');page.locator('#battleSkip').click()
+                page.locator('#battleModal').wait_for(state='visible',timeout=12000);page.locator('#battleSkip').click()
             else:break
-        assert '03/06' in page.locator('#journeyDay').inner_text()
+        expect(page.locator('#journeyDay')).to_contain_text('03/06',timeout=12000)
         assert page.locator('#encounterContent .offer').count()==3
         page.locator('#encounterContent .offer').first.click()
         page.get_by_role('button',name='ENGAGE IN COMBAT').click()
-        page.locator('#battleModal').wait_for(state='visible')
+        page.locator('#battleModal').wait_for(state='visible',timeout=12000)
         assert page.locator('#battleTitle').inner_text()
         page.screenshot(path=str(EVIDENCE/'v05-expedition-battle-mobile.png'),full_page=True)
         page.locator('#battleSkip').click()
