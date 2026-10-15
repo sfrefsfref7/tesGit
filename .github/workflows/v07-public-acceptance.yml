@@ -1,0 +1,57 @@
+name: Night Market v0.7 Public Internet and Mobile Acceptance
+on:
+  push:
+    branches: [night-market-duel-v07-staging]
+  workflow_dispatch:
+jobs:
+  public-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Dependencies
+        run: python -m pip install -r requirements.txt pytest httpx playwright
+      - name: All backend tests
+        run: python -m pytest -q
+      - name: Confirm actual public HTTPS build
+        run: |
+          python - <<'PY'
+          import urllib.request, json, time
+          url='https://night-market-duel-expedition-v07.onrender.com/health'
+          for i in range(45):
+              try:
+                  with urllib.request.urlopen(url,timeout=12) as r: v=json.load(r)
+                  if v.get('ok') and v.get('build')=='0.7.0':
+                      print('VERIFIED HTTPS version 0.7.0',v)
+                      break
+              except Exception as err: print('Waiting',i,str(err)[:120])
+              time.sleep(8)
+          else: raise RuntimeError('Public host did not serve the requested version')
+          PY
+      - name: Two independent sessions and security checks over public WSS
+        env:
+          NMD_PUBLIC_BASE: https://night-market-duel-expedition-v07.onrender.com
+        run: python tests/public_smoke.py
+      - name: Install browser
+        run: python -m playwright install --with-deps chromium
+      - name: Separate mobile-browser multiplayer 1v1 over public WSS
+        env:
+          NMD_PUBLIC_BASE: https://night-market-duel-expedition-v07.onrender.com
+        run: python tests/browser_public.py
+      - name: Guided Expedition on public HTTPS with shop and Codex
+        env:
+          NMD_BASE: https://night-market-duel-expedition-v07.onrender.com
+        run: python tests/browser_guided_v07.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v07-public-https-wss-mobile-proof
+          path: |
+            evidence/network-public.json
+            evidence/browser-public.json
+            evidence/v07-*.png
+            evidence/v07-browser-report.json
+          if-no-files-found: warn
